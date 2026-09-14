@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>중력 골프 (Gravity Golf) - 중학교 1학년 과학 5단원 연계</title>
+    <meta name="description" content="중학교 1학년 과학 5단원 중력과 운동 단원 연계 10단계 중력 골프 웹 게임">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- 1. 초슬림 일체형 헤더 바 -->
+        <header class="header-bar">
+            <div class="header-left">
+                <span class="app-logo" aria-hidden="true">🪐</span>
+                <h1 class="app-title">중력 골프</h1>
+                <span class="stage-badge" id="currentStageText">Stage 1: 중력과의 첫 만남</span>
+                <span class="concept-badge" id="scienceConcept">인력과 궤도의 휨</span>
+            </div>
+
+            <div class="header-center">
+                <div class="stat-pill">PAR <strong id="parCount">1</strong></div>
+                <div class="stat-pill">타수 <strong id="strokeCount">0</strong></div>
+                <div class="stat-pill">최고 <strong id="bestStars" class="stars-val">☆☆☆</strong></div>
+            </div>
+
+            <div class="header-right">
+                <button type="button" id="btnStageSelect" class="btn-glass" title="전체 10단계 선택">🗺️ 단계</button>
+                <button type="button" id="btnMute" class="btn-glass active" title="사운드 On/Off">🔊 소리</button>
+                <button type="button" id="btnReset" class="btn-glass" title="공 위치 초기화 (R)">🔄 다시</button>
+            </div>
+        </header>
+
+        <!-- 2. 한 줄 과학 팁 안내 바 -->
+        <div class="hint-bar">
+            <span class="hint-icon">💡</span>
+            <span class="hint-text" id="stageTip">행성의 중력이 공을 아래로 끌어당깁니다! 발사 각도를 위쪽(-15° ~ -20°)으로 올려서 쏴보세요.</span>
+            <!-- 스크립트 호환용 히든 엘리먼트 -->
+            <span id="stageDescription" style="display:none;"></span>
+            <span id="stageSubtitle" style="display:none;"></span>
+        </div>
+
+        <!-- 3. 화면을 넓게 쓰는 메인 캔버스 -->
+        <main class="canvas-wrapper">
+            <canvas id="gameCanvas" width="1100" height="650" aria-label="중력 골프 시뮬레이션 화면"></canvas>
+            <div class="canvas-hint">
+                🖱️/📱 공을 뒤로 당겼다 놓거나, 하단 조작바를 터치하세요
+            </div>
+        </main>
+
+        <!-- 4. 하단 과학 조작 및 탐구 패널 (태블릿 최적화) -->
+        <footer class="control-dashboard">
+            <!-- 수치 제어: 각도 & 파워 -->
+            <div class="control-col">
+                <div class="control-row">
+                    <span class="ctrl-label">각도</span>
+                    <div class="range-wrap">
+                        <button type="button" id="btnAngleMinus5" class="micro-btn" title="5도 감소">-5°</button>
+                        <button type="button" id="btnAngleMinus" class="micro-btn" title="1도 감소">-1°</button>
+                        <input type="range" id="angleSlider" min="-180" max="180" value="0" step="0.5" aria-label="발사 각도">
+                        <button type="button" id="btnAnglePlus" class="micro-btn" title="1도 증가">+1°</button>
+                        <button type="button" id="btnAnglePlus5" class="micro-btn" title="5도 증가">+5°</button>
+                    </div>
+                    <span class="value-display" id="angleNum">0°</span>
+                </div>
+
+                <div class="control-row">
+                    <span class="ctrl-label">파워</span>
+                    <div class="range-wrap">
+                        <input type="range" id="powerSlider" min="15" max="100" value="60" step="1" aria-label="발사 파워">
+                    </div>
+                    <span class="value-display" id="powerNum">60%</span>
+                </div>
+            </div>
+
+            <!-- 시각화 옵션 토글 (터치하기 쉬운 큰 버튼) -->
+            <div class="toggle-grid">
+                <label class="toggle-item" title="초기 발사 방향 및 짧은 가이드선 표시">
+                    <input type="checkbox" id="togglePrediction" checked>
+                    <span>초기 조준선</span>
+                </label>
+                <label class="toggle-item" title="행성의 인력 크기/방향 화살표">
+                    <input type="checkbox" id="toggleVectors" checked>
+                    <span>중력 벡터</span>
+                </label>
+                <label class="toggle-item" title="중력장 등고선 링 표시">
+                    <input type="checkbox" id="toggleField" checked>
+                    <span>중력장 등고선</span>
+                </label>
+                <label class="toggle-item" title="물리 움직임을 천천히 관찰">
+                    <input type="checkbox" id="toggleSlow">
+                    <span>슬로우 모션</span>
+                </label>
+            </div>
+
+            <!-- 발사 버튼 -->
+            <div class="action-col">
+                <button type="button" id="btnFire" class="btn-fire" aria-label="공 발사">
+                    🚀 발사
+                </button>
+            </div>
+        </footer>
+    </div>
+
+    <!-- 스테이지 클리어 모달 -->
+    <div id="clearModal" class="modal-overlay hidden" role="dialog" aria-modal="true">
+        <div class="modal-content">
+            <div class="modal-icon">🎉</div>
+            <h2 id="clearStageName">Stage 1 클리어!</h2>
+            <div class="modal-stars" id="clearStars">★★★</div>
+            
+            <div class="modal-info-box">
+                <div>기록: <strong id="clearStrokes">1타 (기준 PAR: 1)</strong></div>
+                <div id="clearConceptReview" style="margin-top: 4px; color: #a5b4fc;">
+                    핵심 과학 원리: 중력에 의한 곡선 운동
+                </div>
+            </div>
+
+            <div class="modal-actions">
+                <button type="button" id="btnRetryStage" class="btn-secondary">다시 도전</button>
+                <button type="button" id="btnNextStage" class="btn-primary">다음 단계 ➔</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 전체 10단계 선택 모달 -->
+    <div id="stageModal" class="modal-overlay hidden" role="dialog" aria-modal="true">
+        <div class="modal-content stage-grid-modal">
+            <div class="modal-header-row">
+                <h2>10단계 스테이지 선택</h2>
+                <button type="button" id="btnCloseStageModal" class="btn-close" aria-label="닫기">×</button>
+            </div>
+            <div class="stage-list-grid" id="stageListGrid">
+                <!-- 동적 카드 생성 -->
+            </div>
+        </div>
+    </div>
+
+    <script src="js/audio.js"></script>
+    <script src="js/physics.js"></script>
+    <script src="js/levels.js"></script>
+    <script src="js/game.js"></script>
+</body>
+</html>
