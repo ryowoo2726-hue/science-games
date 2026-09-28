@@ -1,0 +1,93 @@
+{
+  "id": "dive-03",
+  "width": 1152,
+  "height": 624,
+  "cellSize": 12,
+  "waterFraction": 0.5,
+  "difficulty": 3,
+  "name": "첫 번째 수문",
+  "mission": "잠수정으로 A 스위치를 눌러 수문을 여세요. 문이 열리면 양쪽 방의 물도 흐릅니다.",
+  "accent": "#70cce6",
+  "start": {
+    "x": 96,
+    "y": 468
+  },
+  "exit": {
+    "x": 1020,
+    "y": 468,
+    "width": 72,
+    "height": 96
+  },
+  "walls": [
+    {
+      "x": 0,
+      "y": 0,
+      "width": 1152,
+      "height": 24
+    },
+    {
+      "x": 0,
+      "y": 600,
+      "width": 1152,
+      "height": 24
+    },
+    {
+      "x": 0,
+      "y": 24,
+      "width": 24,
+      "height": 576
+    },
+    {
+      "x": 1128,
+      "y": 24,
+      "width": 24,
+      "height": 576
+    },
+    {
+      "x": 564,
+      "y": 24,
+      "width": 24,
+      "height": 192
+    },
+    {
+      "x": 564,
+      "y": 408,
+      "width": 24,
+      "height": 192
+    },
+    {
+      "x": 24,
+      "y": 264,
+      "width": 324,
+      "height": 24
+    },
+    {
+      "x": 744,
+      "y": 336,
+      "width": 384,
+      "height": 24
+    }
+  ],
+  "switches": [
+    {
+      "id": "A",
+      "label": "A",
+      "x": 300,
+      "y": 120
+    }
+  ],
+  "doors": [
+    {
+      "x": 564,
+      "y": 216,
+      "width": 24,
+      "height": 192,
+      "id": "A",
+      "label": "A",
+      "switches": [
+        "A"
+      ]
+    }
+  ],
+  "checkpoints": []
+}

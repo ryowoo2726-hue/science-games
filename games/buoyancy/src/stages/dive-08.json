@@ -1,0 +1,176 @@
+{
+  "id": "dive-08",
+  "width": 1152,
+  "height": 624,
+  "cellSize": 12,
+  "waterFraction": 0.54,
+  "difficulty": 8,
+  "name": "쌍둥이 수문",
+  "mission": "A 수문을 연 뒤 가운데 방의 B 스위치를 찾으세요. 두 번째 수문을 열어 마지막 방으로 이동하세요.",
+  "accent": "#81d2bf",
+  "start": {
+    "x": 120,
+    "y": 504
+  },
+  "exit": {
+    "x": 1032,
+    "y": 108,
+    "width": 60,
+    "height": 96
+  },
+  "walls": [
+    {
+      "x": 0,
+      "y": 0,
+      "width": 1152,
+      "height": 24
+    },
+    {
+      "x": 0,
+      "y": 600,
+      "width": 1152,
+      "height": 24
+    },
+    {
+      "x": 0,
+      "y": 24,
+      "width": 24,
+      "height": 576
+    },
+    {
+      "x": 1128,
+      "y": 24,
+      "width": 24,
+      "height": 576
+    },
+    {
+      "x": 372,
+      "y": 24,
+      "width": 24,
+      "height": 108
+    },
+    {
+      "x": 372,
+      "y": 276,
+      "width": 24,
+      "height": 324
+    },
+    {
+      "x": 756,
+      "y": 24,
+      "width": 24,
+      "height": 372
+    },
+    {
+      "x": 756,
+      "y": 540,
+      "width": 24,
+      "height": 60
+    },
+    {
+      "x": 24,
+      "y": 312,
+      "width": 216,
+      "height": 24
+    },
+    {
+      "x": 396,
+      "y": 312,
+      "width": 240,
+      "height": 24
+    },
+    {
+      "x": 876,
+      "y": 288,
+      "width": 252,
+      "height": 24
+    }
+  ],
+  "switches": [
+    {
+      "id": "A",
+      "label": "A",
+      "x": 120,
+      "y": 120
+    },
+    {
+      "id": "B",
+      "label": "B",
+      "x": 576,
+      "y": 504
+    }
+  ],
+  "doors": [
+    {
+      "x": 372,
+      "y": 132,
+      "width": 24,
+      "height": 144,
+      "id": "A",
+      "label": "A",
+      "switches": [
+        "A"
+      ]
+    },
+    {
+      "x": 756,
+      "y": 396,
+      "width": 24,
+      "height": 144,
+      "id": "B",
+      "label": "B",
+      "switches": [
+        "B"
+      ]
+    }
+  ],
+  "spikes": [
+    {
+      "x": 432,
+      "y": 336,
+      "width": 144,
+      "height": 24,
+      "direction": "down"
+    },
+    {
+      "x": 900,
+      "y": 264,
+      "width": 144,
+      "height": 24,
+      "direction": "up"
+    }
+  ],
+  "repairs": [
+    {
+      "x": 624,
+      "y": 408,
+      "width": 96,
+      "height": 48
+    },
+    {
+      "x": 984,
+      "y": 432,
+      "width": 96,
+      "height": 48
+    }
+  ],
+  "densityZones": [
+    {
+      "x": 24,
+      "y": 24,
+      "width": 348,
+      "height": 576,
+      "density": 0.82,
+      "label": "저밀도 물"
+    },
+    {
+      "x": 396,
+      "y": 24,
+      "width": 360,
+      "height": 576,
+      "density": 1.22,
+      "label": "고밀도 물"
+    }
+  ],
+  "checkpoints": []
+}

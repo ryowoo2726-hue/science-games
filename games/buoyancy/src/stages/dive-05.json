@@ -1,0 +1,127 @@
+{
+  "id": "dive-05",
+  "width": 1152,
+  "height": 624,
+  "cellSize": 12,
+  "waterFraction": 0.5,
+  "difficulty": 5,
+  "name": "보랏빛 저수지",
+  "mission": "보라색 물은 부력이 더 큽니다. B 스위치를 누른 뒤 저수지 안쪽 출구에 들어가세요.",
+  "accent": "#b49be9",
+  "start": {
+    "x": 120,
+    "y": 480
+  },
+  "exit": {
+    "x": 564,
+    "y": 276,
+    "width": 96,
+    "height": 96
+  },
+  "walls": [
+    {
+      "x": 0,
+      "y": 0,
+      "width": 1152,
+      "height": 24
+    },
+    {
+      "x": 0,
+      "y": 600,
+      "width": 1152,
+      "height": 24
+    },
+    {
+      "x": 0,
+      "y": 24,
+      "width": 24,
+      "height": 576
+    },
+    {
+      "x": 1128,
+      "y": 24,
+      "width": 24,
+      "height": 576
+    },
+    {
+      "x": 372,
+      "y": 204,
+      "width": 408,
+      "height": 24
+    },
+    {
+      "x": 372,
+      "y": 228,
+      "width": 24,
+      "height": 192
+    },
+    {
+      "x": 372,
+      "y": 420,
+      "width": 408,
+      "height": 24
+    },
+    {
+      "x": 756,
+      "y": 228,
+      "width": 24,
+      "height": 84
+    }
+  ],
+  "switches": [
+    {
+      "id": "B",
+      "label": "B",
+      "x": 984,
+      "y": 480
+    }
+  ],
+  "doors": [
+    {
+      "x": 756,
+      "y": 312,
+      "width": 24,
+      "height": 108,
+      "id": "B",
+      "label": "B",
+      "switches": [
+        "B"
+      ]
+    }
+  ],
+  "spikes": [
+    {
+      "x": 396,
+      "y": 396,
+      "width": 120,
+      "height": 24,
+      "direction": "up"
+    },
+    {
+      "x": 840,
+      "y": 576,
+      "width": 144,
+      "height": 24,
+      "direction": "up"
+    }
+  ],
+  "repairs": [
+    {
+      "x": 900,
+      "y": 384,
+      "width": 96,
+      "height": 48
+    }
+  ],
+  "densityZones": [
+    {
+      "x": 576,
+      "y": 24,
+      "width": 552,
+      "height": 576,
+      "density": 1.18,
+      "label": "고밀도 물"
+    }
+  ],
+  "checkpoints": []
+}

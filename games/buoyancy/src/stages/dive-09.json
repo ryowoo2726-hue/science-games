@@ -1,0 +1,162 @@
+{
+  "id": "dive-09",
+  "width": 1152,
+  "height": 624,
+  "cellSize": 12,
+  "waterFraction": 0.54,
+  "difficulty": 9,
+  "name": "침몰한 정비 기지",
+  "mission": "기지 곳곳의 A·B·C 스위치를 찾아 중앙 대피소 문을 여세요. 가시를 피해 정비소를 경유할 수 있습니다.",
+  "accent": "#a9cbb1",
+  "start": {
+    "x": 144,
+    "y": 480
+  },
+  "exit": {
+    "x": 516,
+    "y": 264,
+    "width": 96,
+    "height": 84
+  },
+  "walls": [
+    {
+      "x": 0,
+      "y": 0,
+      "width": 1152,
+      "height": 24
+    },
+    {
+      "x": 0,
+      "y": 600,
+      "width": 1152,
+      "height": 24
+    },
+    {
+      "x": 0,
+      "y": 24,
+      "width": 24,
+      "height": 576
+    },
+    {
+      "x": 1128,
+      "y": 24,
+      "width": 24,
+      "height": 576
+    },
+    {
+      "x": 552,
+      "y": 24,
+      "width": 24,
+      "height": 120
+    },
+    {
+      "x": 552,
+      "y": 480,
+      "width": 24,
+      "height": 120
+    },
+    {
+      "x": 24,
+      "y": 300,
+      "width": 336,
+      "height": 24
+    },
+    {
+      "x": 792,
+      "y": 300,
+      "width": 336,
+      "height": 24
+    },
+    {
+      "x": 456,
+      "y": 216,
+      "width": 240,
+      "height": 24
+    },
+    {
+      "x": 456,
+      "y": 384,
+      "width": 240,
+      "height": 24
+    },
+    {
+      "x": 456,
+      "y": 240,
+      "width": 24,
+      "height": 144
+    }
+  ],
+  "switches": [
+    {
+      "id": "A",
+      "label": "A",
+      "x": 192,
+      "y": 108
+    },
+    {
+      "id": "B",
+      "label": "B",
+      "x": 984,
+      "y": 120
+    },
+    {
+      "id": "C",
+      "label": "C",
+      "x": 984,
+      "y": 504
+    }
+  ],
+  "doors": [
+    {
+      "x": 672,
+      "y": 240,
+      "width": 24,
+      "height": 144,
+      "id": "ABC",
+      "label": "ABC",
+      "switches": [
+        "A",
+        "B",
+        "C"
+      ]
+    }
+  ],
+  "spikes": [
+    {
+      "x": 120,
+      "y": 276,
+      "width": 168,
+      "height": 24,
+      "direction": "up"
+    },
+    {
+      "x": 816,
+      "y": 324,
+      "width": 144,
+      "height": 24,
+      "direction": "down"
+    },
+    {
+      "x": 120,
+      "y": 576,
+      "width": 144,
+      "height": 24,
+      "direction": "up"
+    }
+  ],
+  "repairs": [
+    {
+      "x": 744,
+      "y": 84,
+      "width": 96,
+      "height": 48
+    },
+    {
+      "x": 336,
+      "y": 456,
+      "width": 96,
+      "height": 48
+    }
+  ],
+  "checkpoints": []
+}

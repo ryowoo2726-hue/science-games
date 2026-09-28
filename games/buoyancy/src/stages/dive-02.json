@@ -1,0 +1,109 @@
+{
+  "id": "dive-02",
+  "width": 1152,
+  "height": 624,
+  "cellSize": 12,
+  "waterFraction": 0.5,
+  "difficulty": 2,
+  "name": "산호 협곡",
+  "mission": "붉은 가시를 피해 협곡을 건너세요. 가시에 닿으면 ＋ 정비소에서 누수를 수리할 수 있습니다.",
+  "accent": "#e88f7b",
+  "start": {
+    "x": 96,
+    "y": 420
+  },
+  "exit": {
+    "x": 1020,
+    "y": 420,
+    "width": 72,
+    "height": 96
+  },
+  "walls": [
+    {
+      "x": 0,
+      "y": 0,
+      "width": 1152,
+      "height": 24
+    },
+    {
+      "x": 0,
+      "y": 600,
+      "width": 1152,
+      "height": 24
+    },
+    {
+      "x": 0,
+      "y": 24,
+      "width": 24,
+      "height": 576
+    },
+    {
+      "x": 1128,
+      "y": 24,
+      "width": 24,
+      "height": 576
+    },
+    {
+      "x": 300,
+      "y": 24,
+      "width": 24,
+      "height": 300
+    },
+    {
+      "x": 600,
+      "y": 300,
+      "width": 24,
+      "height": 300
+    },
+    {
+      "x": 840,
+      "y": 204,
+      "width": 288,
+      "height": 24
+    },
+    {
+      "x": 408,
+      "y": 420,
+      "width": 96,
+      "height": 36
+    },
+    {
+      "x": 732,
+      "y": 72,
+      "width": 96,
+      "height": 36
+    }
+  ],
+  "spikes": [
+    {
+      "x": 24,
+      "y": 576,
+      "width": 156,
+      "height": 24,
+      "direction": "up"
+    },
+    {
+      "x": 300,
+      "y": 324,
+      "width": 24,
+      "height": 24,
+      "direction": "down"
+    },
+    {
+      "x": 900,
+      "y": 180,
+      "width": 120,
+      "height": 24,
+      "direction": "up"
+    }
+  ],
+  "repairs": [
+    {
+      "x": 408,
+      "y": 492,
+      "width": 96,
+      "height": 48
+    }
+  ],
+  "checkpoints": []
+}

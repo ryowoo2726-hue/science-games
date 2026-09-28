@@ -1,0 +1,244 @@
+{
+  "id": "dive-11",
+  "width": 1152,
+  "height": 624,
+  "cellSize": 12,
+  "waterFraction": 0.54,
+  "difficulty": 11,
+  "name": "심해 탈출 작전",
+  "mission": "A → B → C 수문을 차례로 여세요. 좁은 길, 가시, 밀도 차이를 모두 넘으면 심해 탈출 성공입니다.",
+  "accent": "#ddac77",
+  "start": {
+    "x": 108,
+    "y": 108
+  },
+  "exit": {
+    "x": 1008,
+    "y": 468,
+    "width": 84,
+    "height": 84
+  },
+  "walls": [
+    {
+      "x": 0,
+      "y": 0,
+      "width": 1152,
+      "height": 24
+    },
+    {
+      "x": 0,
+      "y": 600,
+      "width": 1152,
+      "height": 24
+    },
+    {
+      "x": 0,
+      "y": 24,
+      "width": 24,
+      "height": 576
+    },
+    {
+      "x": 1128,
+      "y": 24,
+      "width": 24,
+      "height": 576
+    },
+    {
+      "x": 288,
+      "y": 24,
+      "width": 24,
+      "height": 408
+    },
+    {
+      "x": 288,
+      "y": 552,
+      "width": 24,
+      "height": 48
+    },
+    {
+      "x": 552,
+      "y": 24,
+      "width": 24,
+      "height": 72
+    },
+    {
+      "x": 552,
+      "y": 216,
+      "width": 24,
+      "height": 384
+    },
+    {
+      "x": 816,
+      "y": 24,
+      "width": 24,
+      "height": 252
+    },
+    {
+      "x": 816,
+      "y": 396,
+      "width": 24,
+      "height": 204
+    },
+    {
+      "x": 24,
+      "y": 300,
+      "width": 156,
+      "height": 24
+    },
+    {
+      "x": 396,
+      "y": 324,
+      "width": 156,
+      "height": 24
+    },
+    {
+      "x": 576,
+      "y": 288,
+      "width": 144,
+      "height": 24
+    },
+    {
+      "x": 984,
+      "y": 312,
+      "width": 144,
+      "height": 24
+    }
+  ],
+  "switches": [
+    {
+      "id": "A",
+      "label": "A",
+      "x": 144,
+      "y": 480
+    },
+    {
+      "id": "B",
+      "label": "B",
+      "x": 420,
+      "y": 120
+    },
+    {
+      "id": "C",
+      "label": "C",
+      "x": 696,
+      "y": 504
+    }
+  ],
+  "doors": [
+    {
+      "x": 288,
+      "y": 432,
+      "width": 24,
+      "height": 120,
+      "id": "A",
+      "label": "A",
+      "switches": [
+        "A"
+      ]
+    },
+    {
+      "x": 552,
+      "y": 96,
+      "width": 24,
+      "height": 120,
+      "id": "B",
+      "label": "B",
+      "switches": [
+        "B"
+      ]
+    },
+    {
+      "x": 816,
+      "y": 276,
+      "width": 24,
+      "height": 120,
+      "id": "C",
+      "label": "C",
+      "switches": [
+        "C"
+      ]
+    }
+  ],
+  "spikes": [
+    {
+      "x": 48,
+      "y": 324,
+      "width": 96,
+      "height": 24,
+      "direction": "down"
+    },
+    {
+      "x": 456,
+      "y": 348,
+      "width": 96,
+      "height": 24,
+      "direction": "down"
+    },
+    {
+      "x": 576,
+      "y": 264,
+      "width": 96,
+      "height": 24,
+      "direction": "up"
+    },
+    {
+      "x": 900,
+      "y": 576,
+      "width": 168,
+      "height": 24,
+      "direction": "up"
+    },
+    {
+      "x": 984,
+      "y": 336,
+      "width": 120,
+      "height": 24,
+      "direction": "down"
+    }
+  ],
+  "repairs": [
+    {
+      "x": 84,
+      "y": 372,
+      "width": 96,
+      "height": 48
+    },
+    {
+      "x": 360,
+      "y": 408,
+      "width": 96,
+      "height": 48
+    },
+    {
+      "x": 624,
+      "y": 396,
+      "width": 96,
+      "height": 48
+    },
+    {
+      "x": 924,
+      "y": 408,
+      "width": 96,
+      "height": 48
+    }
+  ],
+  "densityZones": [
+    {
+      "x": 24,
+      "y": 24,
+      "width": 528,
+      "height": 576,
+      "density": 0.78,
+      "label": "저밀도 물"
+    },
+    {
+      "x": 576,
+      "y": 24,
+      "width": 552,
+      "height": 576,
+      "density": 1.28,
+      "label": "고밀도 물"
+    }
+  ],
+  "checkpoints": []
+}
