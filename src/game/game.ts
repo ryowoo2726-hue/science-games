@@ -7,12 +7,13 @@ import { TiltController } from '../input/orientation';
 export type GameStatus = 'ready' | 'playing' | 'paused' | 'won';
 
 export class Game {
-  readonly water: Water;
-  readonly submarine: SubmarinePhysics;
+  water: Water;
+  submarine: SubmarinePhysics;
   readonly tilt = new TiltController();
   status: GameStatus = 'ready';
   elapsed = 0;
   completedGates = 0;
+  stageIndex = 0;
   tankDirection = 0;
   keyboardTilt = 0;
   private accumulator = 0;
@@ -20,11 +21,29 @@ export class Game {
   private raf = 0;
   onStatusChange: () => void = () => {};
   onUpdate: () => void = () => {};
+  onStageChange: () => void = () => {};
   render: () => void = () => {};
 
-  constructor(readonly stage: Stage) {
+  constructor(public stage: Stage, readonly stages: Stage[] = [stage]) {
     this.water = new Water(stage);
     this.submarine = new SubmarinePhysics(stage);
+    this.stageIndex = Math.max(0, stages.findIndex(s => s.id === stage.id));
+  }
+
+  selectStage(index: number): void {
+    if (!Number.isInteger(index) || index < 0 || index >= this.stages.length) return;
+    this.stageIndex = index;
+    this.stage = this.stages[index];
+    this.water = new Water(this.stage);
+    this.submarine = new SubmarinePhysics(this.stage);
+    this.reset();
+    this.onStageChange();
+  }
+
+  nextStage(): void {
+    if (this.status !== 'won' || this.stageIndex + 1 >= this.stages.length) return;
+    this.selectStage(this.stageIndex + 1);
+    this.start();
   }
 
   start(): void {

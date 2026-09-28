@@ -4,8 +4,9 @@ import { Game } from '../src/game/game';
 import { bindView, createView } from '../src/ui/view';
 import type { Renderer } from '../src/render/renderer';
 import stage from '../src/stages/first-dive.json';
+import { stages } from '../src/stages';
 
-const game = new Game(stage);
+const game = new Game(stage, stages);
 const resetRenderer = vi.fn();
 const requestFullscreen = vi.fn<() => Promise<void>>();
 class OrientationEvent extends Event {
@@ -29,7 +30,7 @@ beforeAll(() => {
 });
 beforeEach(() => {
   game.tilt.manual();
-  game.reset();
+  game.selectStage(0);
   resetRenderer.mockClear();
   requestFullscreen.mockReset().mockResolvedValue();
   OrientationEvent.requestPermission.mockReset().mockResolvedValue('granted');
@@ -102,5 +103,22 @@ describe('in-game controls and fullscreen fallback', () => {
     expect(game.tilt.mode).toBe('manual');
     expect(el('manual-control').hidden).toBe(false);
     expect(el<HTMLInputElement>('tilt-slider').disabled).toBe(false);
+  });
+
+  it('lets students choose a stage and continue after completing it', () => {
+    const selector = el<HTMLSelectElement>('stage-select');
+    expect(selector.options.length).toBe(11);
+    selector.value = '4'; selector.dispatchEvent(new Event('change'));
+    expect(game.stageIndex).toBe(4); expect(game.status).toBe('ready');
+    expect(el('stage-name').textContent).toContain('5 / 11');
+    game.status = 'won'; game.onStatusChange(); el('next-stage').click();
+    expect(game.stageIndex).toBe(5); expect(game.status).toBe('playing');
+    expect(el('win-overlay').hidden).toBe(true);
+  });
+
+  it('offers a full campaign restart at the final exit', () => {
+    game.selectStage(10); game.status = 'won'; game.onStatusChange();
+    expect(el('win-title').textContent).toBe('모든 단계 완료!');
+    el('next-stage').click(); expect(game.stageIndex).toBe(0); expect(game.status).toBe('playing');
   });
 });

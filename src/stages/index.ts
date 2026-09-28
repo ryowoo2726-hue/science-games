@@ -1,0 +1,13 @@
+import first from './first-dive.json';
+import stage2 from './dive-02.json';
+import stage3 from './dive-03.json';
+import stage4 from './dive-04.json';
+import stage5 from './dive-05.json';
+import stage6 from './dive-06.json';
+import stage7 from './dive-07.json';
+import stage8 from './dive-08.json';
+import stage9 from './dive-09.json';
+import stage10 from './dive-10.json';
+import stage11 from './dive-11.json';
+import type { Stage } from '../types';
+export const stages: Stage[] = [{ ...first, difficulty: 1 }, stage2, stage3, stage4, stage5, stage6, stage7, stage8, stage9, stage10, stage11];

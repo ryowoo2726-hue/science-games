@@ -1,0 +1,117 @@
+{
+  "id": "dive-05",
+  "name": "진한 물의 방",
+  "difficulty": 5,
+  "width": 1152,
+  "height": 624,
+  "cellSize": 12,
+  "waterFraction": 0.5,
+  "start": {
+    "x": 84,
+    "y": 396
+  },
+  "exit": {
+    "x": 1056,
+    "y": 252,
+    "width": 60,
+    "height": 120
+  },
+  "walls": [
+    {
+      "x": 0,
+      "y": 0,
+      "width": 1152,
+      "height": 24
+    },
+    {
+      "x": 0,
+      "y": 600,
+      "width": 1152,
+      "height": 24
+    },
+    {
+      "x": 0,
+      "y": 24,
+      "width": 24,
+      "height": 576
+    },
+    {
+      "x": 1128,
+      "y": 24,
+      "width": 24,
+      "height": 576
+    },
+    {
+      "x": 144,
+      "y": 24,
+      "width": 24,
+      "height": 444
+    },
+    {
+      "x": 432,
+      "y": 156,
+      "width": 24,
+      "height": 444
+    },
+    {
+      "x": 720,
+      "y": 24,
+      "width": 24,
+      "height": 228
+    },
+    {
+      "x": 720,
+      "y": 384,
+      "width": 24,
+      "height": 216
+    },
+    {
+      "x": 1008,
+      "y": 156,
+      "width": 24,
+      "height": 444
+    },
+    {
+      "x": 168,
+      "y": 276,
+      "width": 36,
+      "height": 24
+    }
+  ],
+  "checkpoints": [
+    {
+      "x": 156,
+      "y": 534,
+      "label": "01",
+      "hint": ""
+    },
+    {
+      "x": 444,
+      "y": 90,
+      "label": "02",
+      "hint": ""
+    },
+    {
+      "x": 732,
+      "y": 318,
+      "label": "03",
+      "hint": ""
+    },
+    {
+      "x": 1020,
+      "y": 90,
+      "label": "04",
+      "hint": ""
+    }
+  ],
+  "densityZones": [
+    {
+      "x": 576,
+      "y": 24,
+      "width": 552,
+      "height": 576,
+      "density": 1.18,
+      "label": "고밀도 액체"
+    }
+  ]
+}

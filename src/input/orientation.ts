@@ -1,4 +1,4 @@
-import { clamp } from '../types';
+import { unwrapAngle, wrapAngle } from '../types';
 
 export type ControlMode = 'manual' | 'requesting' | 'sensor';
 type OrientationConstructor = typeof DeviceOrientationEvent & { requestPermission?: () => Promise<'granted' | 'denied'> };
@@ -11,9 +11,12 @@ export function screenTilt(beta: number, gamma: number, screenAngle: number): nu
   const a = radians(screenAngle);
   const gx = Math.cos(b) * Math.sin(c);
   const gy = Math.sin(b);
-  const gz = Math.cos(b) * Math.cos(c);
   const screenX = gx * Math.cos(a) + gy * Math.sin(a);
-  return Math.atan2(screenX, Math.abs(gz)) * 180 / Math.PI;
+  const screenY = gy * Math.cos(a) - gx * Math.sin(a);
+  // Full roll around the screen normal, including upside-down. A flat device
+  // has no measurable in-plane gravity, so retain the last valid pose instead.
+  if (Math.hypot(screenX, screenY) < .12) return NaN;
+  return Math.atan2(screenX, screenY) * 180 / Math.PI;
 }
 
 export class TiltController {
@@ -34,24 +37,33 @@ export class TiltController {
   private orientation = (event: DeviceOrientationEvent) => {
     if (event.beta === null || event.gamma === null || !Number.isFinite(event.beta) || !Number.isFinite(event.gamma)) return;
     const angle = screen.orientation?.angle ?? (window as Window & { orientation?: number }).orientation ?? 0;
-    this.raw = screenTilt(event.beta, event.gamma, angle);
     this.lastEvent = performance.now();
-    if (this.mode === 'requesting' || angle !== this.screenAngle) {
+    const projected = screenTilt(event.beta, event.gamma, angle);
+    if (!Number.isFinite(projected)) return;
+    if (this.raw !== null && angle !== this.screenAngle && this.mode === 'sensor') {
+      const change = wrapAngle(angle - this.screenAngle);
+      this.raw += change;
+      this.baseline += change;
+    }
+    this.raw = this.raw === null ? projected : unwrapAngle(projected, this.raw);
+    if (this.mode === 'requesting') {
       this.baseline = this.raw;
       this.target = 0;
       this.screenAngle = angle;
       this.mode = 'sensor';
-      this.message = '센서 연결됨 · 오른쪽을 낮추면 + 방향';
+      this.message = '360° 센서 연결됨 · 화면을 정면으로 보고 핸들처럼 돌리세요.';
       clearTimeout(this.timeout);
       this.onChange();
     }
-    const relative = clamp(this.raw - this.baseline, -90, 90);
+    this.screenAngle = angle;
+    const relative = this.raw - this.baseline;
     this.target = Math.abs(relative) < 1.2 ? 0 : relative;
   };
 
   async enable(): Promise<void> {
     const id = ++this.requestId;
     this.stopListener();
+    this.raw = null;
     if (!window.isSecureContext) return this.manual('센서는 HTTPS 연결이 필요해요. 슬라이더로 조작할 수 있어요.');
     if (!('DeviceOrientationEvent' in window)) return this.manual('기울기 센서가 없는 기기예요. 슬라이더로 조작하세요.');
     this.mode = 'requesting';
@@ -88,7 +100,7 @@ export class TiltController {
 
   setManual(angle: number): void {
     if (this.mode !== 'manual') this.manual();
-    this.target = clamp(angle, -90, 90);
+    this.target = unwrapAngle(angle, this.target);
   }
 
   update(dt: number): void {

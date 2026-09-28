@@ -17,6 +17,8 @@ describe('fixed-volume buoyancy', () => {
     expect(forceBalance(0, .65).net).toBeCloseTo(0);
     expect(forceBalance(.5, .5).buoyancy).toBe(.5);
     expect(forceBalance(0, 0).buoyancy).toBe(0);
+    expect(forceBalance(.5, 1, 1.2).net).toBeCloseTo(-.2);
+    expect(forceBalance(.5, 1, .8).net).toBeCloseTo(.2);
   });
 
   it.each([[0, -1], [.5, 0], [1, 1]])('moves with the correct force for tank %s', (tank, direction) => {
@@ -45,6 +47,16 @@ describe('fixed-volume buoyancy', () => {
     expect(water.totalMass()).toBe(externalWater);
   });
 
+  it('carries a neutrally buoyant submarine along with the water current', () => {
+    const stage: Stage = { ...stageData, waterFraction: 1, start: { x: 432, y: 420 } };
+    const water = new Water(stage), physics = new SubmarinePhysics(stage);
+    water.vx.fill(100);
+    const initial = { ...physics.body.position };
+    for (let n = 0; n < 30; n++) physics.step(water, gravityAt(0), 0);
+    expect(physics.body.position.x).toBeGreaterThan(initial.x + 10);
+    expect(Math.abs(physics.body.position.y - initial.y)).toBeLessThan(.01);
+  });
+
   it('does not tunnel through a wall at maximum gravity', () => {
     const water = new Water(stageData);
     const physics = new SubmarinePhysics(stageData);
@@ -68,11 +80,12 @@ describe('fixed-volume buoyancy', () => {
 
 describe('orientation projection', () => {
   it('maps portrait and both landscape directions correctly', () => {
-    expect(screenTilt(0, 30, 0)).toBeCloseTo(30);
-    expect(screenTilt(30, 0, 90)).toBeCloseTo(30);
-    expect(screenTilt(30, 0, 270)).toBeCloseTo(-30);
-    expect(screenTilt(0, 30, 180)).toBeCloseTo(-30);
+    expect(screenTilt(90, 0, 0)).toBeCloseTo(0);
+    expect(screenTilt(0, 90, 0)).toBeCloseTo(90);
+    expect(Math.abs(screenTilt(-90, 0, 0))).toBeCloseTo(180);
+    expect(screenTilt(0, -90, 0)).toBeCloseTo(-90);
     expect(screenTilt(90, 0, 90)).toBeCloseTo(90);
-    expect(screenTilt(-90, 0, 90)).toBeCloseTo(-90);
+    expect(screenTilt(90, 0, 270)).toBeCloseTo(-90);
+    expect(Number.isNaN(screenTilt(0, 0, 0))).toBe(true);
   });
 });

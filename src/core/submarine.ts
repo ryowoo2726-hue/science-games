@@ -11,9 +11,9 @@ export const SUB_WIDTH = 52;
 export const SUB_HEIGHT = 32;
 
 export const relativeDensity = (tank: number) => 0.65 + 0.7 * clamp(tank, 0, 1);
-export function forceBalance(tank: number, submerged: number) {
+export function forceBalance(tank: number, submerged: number, waterDensity = 1) {
   const weight = relativeDensity(tank);
-  const buoyancy = clamp(submerged, 0, 1); // water density = 1, fixed outside volume = 1
+  const buoyancy = clamp(submerged, 0, 1) * waterDensity;
   return { weight, buoyancy, net: weight - buoyancy };
 }
 
@@ -23,6 +23,7 @@ export class SubmarinePhysics {
   readonly walls: Matter.Body[];
   tank = 0.5;
   submerged = 1;
+  waterDensity = 1;
   private samples: Vector[] = [];
 
   constructor(readonly stage: Stage) {
@@ -46,6 +47,7 @@ export class SubmarinePhysics {
   reset(): void {
     this.tank = 0.5;
     this.submerged = 1;
+    this.waterDensity = 1;
     Body.setPosition(this.body, this.stage.start);
     Body.setVelocity(this.body, { x: 0, y: 0 });
     Body.setAngle(this.body, 0);
@@ -59,7 +61,7 @@ export class SubmarinePhysics {
   }
 
   get density(): number { return relativeDensity(this.tank); }
-  get forces() { return forceBalance(this.tank, this.submerged); }
+  get forces() { return forceBalance(this.tank, this.submerged, this.waterDensity); }
 
   updateTank(direction: number, dt = FIXED_STEP): void {
     this.tank = clamp(this.tank + direction * TANK_RATE * dt, 0, 1);
@@ -69,14 +71,22 @@ export class SubmarinePhysics {
 
   step(water: Water, gravity: Vector, tankDirection: number): void {
     this.updateTank(tankDirection);
-    this.submerged = this.samples.reduce((sum, sample) => sum + water.coverageAt(this.body.position.x + sample.x, this.body.position.y + sample.y, gravity), 0) / this.samples.length;
+    let wet = 0, density = 0, currentX = 0, currentY = 0;
+    for (const sample of this.samples) {
+      const liquid = water.sample(this.body.position.x + sample.x, this.body.position.y + sample.y);
+      wet += liquid.coverage; density += liquid.coverage * liquid.density;
+      currentX += liquid.coverage * liquid.vx; currentY += liquid.coverage * liquid.vy;
+    }
+    this.submerged = wet / this.samples.length;
+    this.waterDensity = wet > .001 ? density / wet : 1;
     const { net } = this.forces;
     // Fg = rho_sub * V * g; Fb = rho_water * V_submerged * g, opposite gravity.
     Body.applyForce(this.body, this.body.position, { x: BASE_MASS * GRAVITY_ACCELERATION * net * gravity.x, y: BASE_MASS * GRAVITY_ACCELERATION * net * gravity.y });
     const damping = Math.exp(-(0.14 + 2.65 * this.submerged) * FIXED_STEP);
     const speed = Math.hypot(this.body.velocity.x, this.body.velocity.y);
     const limiter = speed > 3.2 ? 3.2 / speed : 1;
-    Body.setVelocity(this.body, { x: this.body.velocity.x * damping * limiter, y: this.body.velocity.y * damping * limiter });
+    const coupling = wet > .001 ? (1 - Math.exp(-2.65 * this.submerged * FIXED_STEP)) * FIXED_STEP / wet : 0;
+    Body.setVelocity(this.body, { x: this.body.velocity.x * damping * limiter + currentX * coupling, y: this.body.velocity.y * damping * limiter + currentY * coupling });
     Engine.update(this.engine, FIXED_STEP * 1000);
   }
 }

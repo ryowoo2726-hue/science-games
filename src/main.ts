@@ -1,12 +1,12 @@
 import './style.css';
-import stage from './stages/first-dive.json';
+import { stages } from './stages';
 import { Game } from './game/game';
 import { Renderer } from './render/renderer';
 import { bindView, createView } from './ui/view';
 
 try {
   const canvas = createView();
-  const game = new Game(stage);
+  const game = new Game(stages[0], stages);
   const renderer = new Renderer(canvas, game);
   bindView(game, renderer);
   game.render = () => renderer.draw();

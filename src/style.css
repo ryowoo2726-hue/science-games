@@ -10,6 +10,8 @@
 html, body, #app { width: 100%; height: 100%; margin: 0; overflow: hidden; }
 body { overscroll-behavior: none; touch-action: manipulation; }
 button, input { font: inherit; }
+select { font: inherit; color: inherit; }
+#stage-select { max-width: 160px; width: 150px; min-height: 30px; padding: 0 3px; border: 0; background: #12374a; border-radius: 6px; pointer-events: auto; font-size: 12px; }
 button { cursor: pointer; color: inherit; border: 0; touch-action: manipulation; user-select: none; -webkit-user-select: none; }
 button:disabled { cursor: default; opacity: .4; }
 button:focus-visible, input:focus-visible { outline: 3px solid #ffe5a1; outline-offset: 3px; }
@@ -25,6 +27,8 @@ svg { width: 22px; height: 22px; flex-shrink: 0; }
 #timer { color: #a6cbd7; font-variant-numeric: tabular-nums; }
 .readout { color: #9fbfcb; }
 .readout b { margin-left: 4px; color: #e3f5fa; font-weight: 600; font-variant-numeric: tabular-nums; }
+.readout b.dense-liquid { color: #d4c2ff; }
+.readout b.light-liquid { color: #ffe1a3; }
 .hud-actions { padding: 3px; gap: 3px; pointer-events: auto; }
 .hud { z-index: 3; }
 .game-controls { z-index: 1; }
@@ -65,12 +69,15 @@ svg { width: 22px; height: 22px; flex-shrink: 0; }
 .load-error { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px; padding: 24px; text-align: center; }
 .load-error button { padding: 14px 24px; border-radius: 12px; background: #71d9ef; color: #10374b; }
 @media (max-width: 900px) {
+  #stage-select { width: 115px; }
   .hud-readouts { gap: 10px; padding: 7px 10px; }
   .density-readout { display: none; }
   .tank-button { min-height: 62px; padding: 12px; }
   .tank-button span { font-size: 16px; }
 }
 @media (max-width: 600px) {
+  #stage-select { width: 68px; font-size: 10px; }
+  .hud { flex-wrap: wrap; }
   .hud { left: max(8px, env(safe-area-inset-left)); right: max(8px, env(safe-area-inset-right)); gap: 5px; }
   .game-title { display: none; }
   .hud-readouts { gap: 8px; font-size: 11px; padding: 7px 9px; }

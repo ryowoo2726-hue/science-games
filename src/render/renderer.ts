@@ -1,6 +1,6 @@
 import type { Game } from '../game/game';
-import { filledCellPolygon, fillThreshold } from '../core/water';
-import { gravityAt, type Vector } from '../types';
+import { traceSurface } from './surface';
+import type { Vector } from '../types';
 
 const TAU = Math.PI * 2;
 const font = '"Segoe UI", "Malgun Gothic", sans-serif';
@@ -9,12 +9,11 @@ export class Renderer {
   private ctx: CanvasRenderingContext2D;
   private waterCanvas = document.createElement('canvas');
   private waterContext: CanvasRenderingContext2D;
-  private waterMask = document.createElement('canvas');
-  private maskContext: CanvasRenderingContext2D;
+  private materialCanvas = document.createElement('canvas');
+  private materialContext: CanvasRenderingContext2D;
   private openArea = new Path2D();
-  private displayMass: Float64Array;
+  private materialImage!: ImageData;
   private waterStamp = -1;
-  private lastAngle = Infinity;
   private lastBlend = -1;
   private width = 0;
   private height = 0;
@@ -25,28 +24,12 @@ export class Renderer {
   constructor(private canvas: HTMLCanvasElement, private game: Game) {
     const ctx = canvas.getContext('2d', { alpha: false });
     const waterContext = this.waterCanvas.getContext('2d');
-    const maskContext = this.waterMask.getContext('2d');
-    if (!ctx || !waterContext || !maskContext) throw new Error('Canvas를 지원하는 브라우저가 필요합니다.');
+    const materialContext = this.materialCanvas.getContext('2d');
+    if (!ctx || !waterContext || !materialContext) throw new Error('Canvas를 지원하는 브라우저가 필요합니다.');
     this.ctx = ctx;
     this.waterContext = waterContext;
-    this.maskContext = maskContext;
-    this.waterCanvas.width = game.stage.width;
-    this.waterCanvas.height = game.stage.height;
-    this.waterMask.width = game.stage.width;
-    this.waterMask.height = game.stage.height;
-    this.displayMass = new Float64Array(game.water.mass.length);
-    const { water } = game;
-    for (let row = 0; row < water.rows; row++) {
-      let start = -1;
-      for (let col = 0; col <= water.cols; col++) {
-        const open = col < water.cols && !water.solid[row * water.cols + col];
-        if (open && start < 0) start = col;
-        if (!open && start >= 0) {
-          this.openArea.rect(start * water.size, row * water.size, (col - start) * water.size, water.size);
-          start = -1;
-        }
-      }
-    }
+    this.materialContext = materialContext;
+    this.reset();
     this.observer = new ResizeObserver(() => this.resize());
     this.observer.observe(canvas);
     this.resize();
@@ -62,13 +45,27 @@ export class Renderer {
     this.draw();
   }
 
-  reset(): void { this.trail = []; this.waterStamp = -1; }
+  reset(): void {
+    this.trail = []; this.waterStamp = -1; this.lastBlend = -1;
+    const { water, stage } = this.game;
+    this.waterCanvas.width = stage.width; this.waterCanvas.height = stage.height;
+    this.materialCanvas.width = water.fieldCols; this.materialCanvas.height = water.fieldRows;
+    this.materialImage = this.materialContext.createImageData(water.fieldCols, water.fieldRows);
+    this.openArea = new Path2D();
+    for (let row = 0; row < water.rows; row++) {
+      let start = -1;
+      for (let col = 0; col <= water.cols; col++) {
+        const open = col < water.cols && !water.solid[row * water.cols + col];
+        if (open && start < 0) start = col;
+        if (!open && start >= 0) { this.openArea.rect(start * water.size, row * water.size, (col - start) * water.size, water.size); start = -1; }
+      }
+    }
+  }
 
   draw(): void {
     if (!this.width || !this.height) return;
     const { ctx, game } = this;
     const { stage } = game;
-    const g = gravityAt(game.tilt.angle);
     ctx.setTransform(this.pixelRatio, 0, 0, this.pixelRatio, 0, 0);
     ctx.fillStyle = '#102e42';
     ctx.fillRect(0, 0, this.width, this.height);
@@ -80,86 +77,56 @@ export class Renderer {
     bg.addColorStop(1, '#153e52');
     ctx.fillStyle = bg;
     ctx.fillRect(0, 0, stage.width, stage.height);
-    ctx.strokeStyle = 'rgba(137,199,216,0.06)';
-    ctx.lineWidth = 1;
-    ctx.beginPath();
-    for (let x = 24; x < stage.width; x += 24) { ctx.moveTo(x, 24); ctx.lineTo(x, stage.height - 24); }
-    for (let y = 24; y < stage.height; y += 24) { ctx.moveTo(24, y); ctx.lineTo(stage.width - 24, y); }
-    ctx.stroke();
 
     this.drawExit();
     const stamp = game.water.revision;
     const blend = game.renderBlend;
-    if (this.waterStamp !== stamp || Math.abs(this.lastAngle - game.tilt.angle) > .1 || Math.abs(this.lastBlend - blend) > .001) {
-      this.paintWater(g, blend);
+    if (this.waterStamp !== stamp || Math.abs(this.lastBlend - blend) > .001) {
+      this.paintWater(blend);
       this.waterStamp = stamp;
-      this.lastAngle = game.tilt.angle;
       this.lastBlend = blend;
     }
     ctx.drawImage(this.waterCanvas, 0, 0);
     this.drawWalls();
     this.drawWaypoints();
-    this.drawBubbles();
     this.drawSubmarine();
   }
 
-  private paintWater(g: Vector, blend: number): void {
-    const ctx = this.maskContext;
+  private paintWater(blend: number): void {
     const { water, stage } = this.game;
-    const s = water.size;
-    const mass = this.displayMass;
-    for (let i = 0; i < mass.length; i++) mass[i] = water.previousMass[i] + (water.mass[i] - water.previousMass[i]) * blend;
+    water.buildSurface(blend);
+    const liquid = new Path2D(), surface = new Path2D();
+    traceSurface(water, points => {
+      liquid.moveTo(points[0], points[1]);
+      for (let i = 2; i < points.length; i += 2) liquid.lineTo(points[i], points[i + 1]);
+      liquid.closePath();
+    }, (x1, y1, x2, y2) => { surface.moveTo(x1, y1); surface.lineTo(x2, y2); });
+    const ctx = this.waterContext;
     ctx.clearRect(0, 0, stage.width, stage.height);
-    ctx.fillStyle = '#fff';
-    const surface: [number, number, number, number][] = [];
-    mass.forEach((amount, i) => {
-      if (amount < .002 || water.solid[i]) return;
-      const x = i % water.cols * s;
-      const y = Math.floor(i / water.cols) * s;
-      if (amount >= .998) {
-        ctx.fillRect(x, y, s + .1, s + .1);
-        if (i >= water.cols && !water.solid[i - water.cols] && mass[i - water.cols] < .002) surface.push([x, y, x + s, y]);
-        if (i % water.cols && !water.solid[i - 1] && mass[i - 1] < .002) surface.push([x, y, x, y + s]);
-        if ((i + 1) % water.cols && !water.solid[i + 1] && mass[i + 1] < .002) surface.push([x + s, y, x + s, y + s]);
-      } else {
-        const polygon = filledCellPolygon(amount, g);
-        if (!polygon.length) return;
-        ctx.beginPath();
-        polygon.forEach((point, n) => {
-          const px = x + (point.x + .5) * s;
-          const py = y + (point.y + .5) * s;
-          if (!n) ctx.moveTo(px, py); else ctx.lineTo(px, py);
-        });
-        ctx.closePath();
-        ctx.fill();
-        const threshold = fillThreshold(amount, g);
-        const cuts = polygon.filter(p => Math.abs(p.x * g.x + p.y * g.y - threshold) < .00001);
-        if (cuts.length >= 2) surface.push([x + (cuts[0].x + .5) * s, y + (cuts[0].y + .5) * s, x + (cuts[1].x + .5) * s, y + (cuts[1].y + .5) * s]);
+    ctx.save(); ctx.clip(this.openArea);
+    const gradient = ctx.createLinearGradient(0, 0, 0, stage.height);
+    gradient.addColorStop(0, 'rgba(68,199,226,.56)');
+    gradient.addColorStop(1, 'rgba(23,142,193,.64)');
+    ctx.fillStyle = gradient; ctx.fill(liquid);
+    if (stage.densityZones?.length) {
+      const pixels = this.materialImage.data;
+      for (let i = 0; i < water.field.length; i++) {
+        const density = water.field[i] > .01 ? water.materialField[i] / water.field[i] : 1;
+        const high = density >= 1;
+        pixels[i * 4] = high ? 170 : 247;
+        pixels[i * 4 + 1] = high ? 126 : 203;
+        pixels[i * 4 + 2] = high ? 245 : 108;
+        pixels[i * 4 + 3] = Math.min(Math.abs(density - 1) / .3, 1) * 130;
       }
-    });
-    const waterCtx = this.waterContext;
-    waterCtx.clearRect(0, 0, stage.width, stage.height);
-    waterCtx.save();
-    // Soften grid edges without drawing water inside walls. Physics uses the
-    // unsmoothed conservative mass; only this visual mask is softened.
-    waterCtx.clip(this.openArea);
-    if ('filter' in waterCtx) waterCtx.filter = 'blur(2px)';
-    waterCtx.drawImage(this.waterMask, 0, 0);
-    if ('filter' in waterCtx) waterCtx.filter = 'none';
-    waterCtx.globalCompositeOperation = 'source-in';
-    const gradient = waterCtx.createLinearGradient(0, 0, 0, stage.height);
-    gradient.addColorStop(0, 'rgba(44,189,218,.47)');
-    gradient.addColorStop(1, 'rgba(25,142,195,.52)');
-    waterCtx.fillStyle = gradient;
-    waterCtx.fillRect(0, 0, stage.width, stage.height);
-    waterCtx.globalCompositeOperation = 'source-over';
-    waterCtx.strokeStyle = 'rgba(118,226,241,.35)';
-    waterCtx.lineWidth = 1.2;
-    waterCtx.lineJoin = 'round';
-    waterCtx.beginPath();
-    surface.forEach(line => { waterCtx.moveTo(line[0], line[1]); waterCtx.lineTo(line[2], line[3]); });
-    waterCtx.stroke();
-    waterCtx.restore();
+      this.materialContext.putImageData(this.materialImage, 0, 0);
+      ctx.save(); ctx.clip(liquid); ctx.globalCompositeOperation = 'source-atop';
+      ctx.imageSmoothingEnabled = true;
+      ctx.drawImage(this.materialCanvas, -water.fieldSize / 2, -water.fieldSize / 2, water.fieldCols * water.fieldSize, water.fieldRows * water.fieldSize);
+      ctx.restore();
+    }
+    ctx.strokeStyle = 'rgba(163,235,247,.4)'; ctx.lineWidth = 1.25;
+    ctx.lineCap = 'round'; ctx.lineJoin = 'round'; ctx.stroke(surface);
+    ctx.restore();
   }
 
   private drawWalls(): void {
@@ -225,19 +192,6 @@ export class Renderer {
     ctx.fillStyle = 'rgba(199,227,235,.55)';
     ctx.font = `600 10px ${font}`;
     ctx.fillText('START', stage.start.x, stage.start.y + 49);
-  }
-
-  private drawBubbles(): void {
-    const ctx = this.ctx;
-    const { water, elapsed } = this.game;
-    for (let i = 0; i < 25; i++) {
-      const x = 55 + (i * 131.3) % 1040;
-      const y = 570 - ((elapsed * (6 + i % 4) + i * 47) % 530);
-      if (water.fractionAt(x, y) < .8) continue;
-      ctx.strokeStyle = 'rgba(151,223,239,.22)';
-      ctx.lineWidth = 1;
-      ctx.beginPath(); ctx.arc(x, y, 1.8 + i % 3, 0, TAU); ctx.stroke();
-    }
   }
 
   private drawSubmarine(): void {

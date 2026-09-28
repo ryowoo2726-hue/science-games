@@ -2,6 +2,7 @@ import type { Game } from '../game/game';
 import { formatTime } from '../game/game';
 import { Controls } from '../input/controls';
 import type { Renderer } from '../render/renderer';
+import { wrapAngle } from '../types';
 
 const icons: Record<string, string> = {
   reset: '<path d="M3 11a9 9 0 1 1 2.3 7M3 4v7h7"/>',
@@ -29,7 +30,7 @@ export function createView(): HTMLCanvasElement {
     <main id="game-screen" class="game-screen" aria-label="부력 미로 게임">
       <canvas id="game-canvas" aria-label="잠수정과 물이 있는 탈출 미로"></canvas>
       <header class="hud">
-        <div class="hud-readouts"><strong class="game-title">부력 탐험</strong><time id="timer">00:00</time><span class="readout">기울기 <b id="hud-angle">0°</b></span><span class="readout density-readout">밀도 <b id="hud-density">1.00</b></span></div>
+        <div class="hud-readouts"><select id="stage-select" aria-label="단계 선택"></select><time id="timer">00:00</time><span class="readout">기울기 <b id="hud-angle">0°</b></span><span class="readout density-readout">잠수정 <b id="hud-density">1.00</b></span><span class="readout">물 <b id="water-density">1.00</b></span></div>
         <nav class="hud-actions" aria-label="게임 설정">
           <button id="switch-mode" class="compact-button">센서 사용</button>
           <button id="calibrate" class="icon-button" aria-label="현재 자세를 0도로 보정" title="0° 보정">${icon('target')}</button>
@@ -43,17 +44,17 @@ export function createView(): HTMLCanvasElement {
         <button id="drain" class="tank-button drain" disabled aria-pressed="false">${icon('drop')}<span>물 빼기<small>W</small></span></button>
         <div class="center-controls">
           <div class="tank-readout"><span>탱크</span><div class="tank-gauge" aria-hidden="true"><i id="tank-level"></i></div><strong id="hud-tank">50%</strong></div>
-          <div id="manual-control" class="manual-control"><span>−90°</span><input id="tilt-slider" type="range" min="-90" max="90" step="1" value="0" aria-label="기울기 각도" disabled><span>+90°</span></div>
+          <div id="manual-control" class="manual-control"><span>−180°</span><input id="tilt-slider" type="range" min="-180" max="180" step="1" value="0" aria-label="360도 기울기 각도" disabled><span>+180°</span></div>
         </div>
         <button id="fill" class="tank-button fill" disabled aria-pressed="false">${icon('drop')}<span>물 채우기<small>S</small></span></button>
       </section>
       <div id="start-overlay" class="game-overlay"><div class="overlay-card">
-        <span class="sub-mark" aria-hidden="true">◉</span><h1>부력 탐험</h1><p>기울기와 잠수정 탱크를 조절해 출구로!</p>
+        <span class="sub-mark" aria-hidden="true">◉</span><h1>부력 탐험</h1><p id="stage-name">첫 번째 잠수</p><p>태블릿을 정면으로 보고 핸들처럼 돌리세요.</p>
         <button id="sensor-start" class="primary-button">태블릿 센서로 시작</button>
         <button id="manual-start" class="secondary-button">수동 조작으로 시작</button>
       </div></div>
       <div id="pause-overlay" class="game-overlay" hidden><div class="overlay-card"><h2>일시 정지</h2><button id="resume" class="primary-button">계속하기</button></div></div>
-      <div id="win-overlay" class="game-overlay" hidden><div class="overlay-card"><span class="success-mark" aria-hidden="true">✓</span><h2>탈출 성공!</h2><time id="finish-time" class="finish-time">00:00</time><button id="play-again" class="primary-button">다시 도전하기</button></div></div>
+      <div id="win-overlay" class="game-overlay" hidden><div class="overlay-card"><span class="success-mark" aria-hidden="true">✓</span><h2 id="win-title">탈출 성공!</h2><time id="finish-time" class="finish-time">00:00</time><button id="next-stage" class="primary-button">다음 단계</button><button id="play-again" class="secondary-button">현재 단계 다시 하기</button></div></div>
     </main>
   `;
   return el<HTMLCanvasElement>('game-canvas');
@@ -66,13 +67,23 @@ export function bindView(game: Game, renderer: Renderer): void {
   const slider = el<HTMLInputElement>('tilt-slider');
   const screen = el('game-screen');
   const fullscreen = el<HTMLButtonElement>('fullscreen');
+  const selector = el<HTMLSelectElement>('stage-select');
+  game.stages.forEach((stage, i) => {
+    const option = document.createElement('option');
+    option.value = String(i); option.textContent = `${i + 1}. ${stage.name}`; selector.append(option);
+  });
+  selector.addEventListener('change', () => { controls.clear(); game.selectStage(Number(selector.value)); });
+  game.onStageChange = () => { renderer.reset(); };
   let lastUpdate = 0;
   let messageTimeout: ReturnType<typeof setTimeout> | undefined;
 
   // The game always fills the viewport; supported browsers can also hide chrome.
   const enterFullscreen = () => {
     if (!document.fullscreenElement && screen.requestFullscreen) {
-      void screen.requestFullscreen().catch(() => {});
+      void screen.requestFullscreen().then(() => {
+        const orientation = window.screen.orientation as ScreenOrientation & { lock?: (mode: string) => Promise<void> };
+        if (orientation?.lock) void orientation.lock('landscape').catch(() => {});
+      }).catch(() => {});
     }
   };
   fullscreen.hidden = !screen.requestFullscreen;
@@ -94,6 +105,10 @@ export function bindView(game: Game, renderer: Renderer): void {
     enterFullscreen();
   });
   el('play-again').addEventListener('click', () => { reset(); game.start(); });
+  el('next-stage').addEventListener('click', () => {
+    if (game.stageIndex + 1 < game.stages.length) game.nextStage();
+    else { game.selectStage(0); game.start(); }
+  });
   el('restart').addEventListener('click', () => { reset(); game.start(); });
   el('resume').addEventListener('click', () => game.togglePause());
   el('pause').addEventListener('click', () => { controls.clear(); game.togglePause(); });
@@ -126,6 +141,11 @@ export function bindView(game: Game, renderer: Renderer): void {
     el('pause-overlay').hidden = game.status !== 'paused';
     el('win-overlay').hidden = game.status !== 'won';
     const playing = game.status === 'playing';
+    selector.value = String(game.stageIndex);
+    text('stage-name', `${game.stageIndex + 1} / ${game.stages.length} · ${game.stage.name}`);
+    const last = game.stageIndex === game.stages.length - 1;
+    text('win-title', last ? '모든 단계 완료!' : '탈출 성공!');
+    text('next-stage', last ? '처음부터 다시' : `다음 단계 · ${game.stageIndex + 2}`);
     el<HTMLButtonElement>('fill').disabled = !playing;
     el<HTMLButtonElement>('drain').disabled = !playing;
     const pause = el<HTMLButtonElement>('pause');
@@ -144,11 +164,13 @@ export function bindView(game: Game, renderer: Renderer): void {
     lastUpdate = now;
     const { submarine, tilt } = game;
     text('timer', formatTime(game.elapsed));
-    text('hud-angle', `${Math.round(tilt.angle)}°`);
+    text('hud-angle', `${(Math.round(tilt.angle) % 360 + 360) % 360}°`);
     text('hud-density', submarine.density.toFixed(2));
+    text('water-density', submarine.submerged > .02 ? submarine.waterDensity.toFixed(2) : '—');
+    el('water-density').className = submarine.waterDensity > 1.02 ? 'dense-liquid' : submarine.waterDensity < .98 ? 'light-liquid' : '';
     text('hud-tank', `${Math.round(submarine.tank * 100)}%`);
     el('tank-level').style.width = `${submarine.tank * 100}%`;
-    slider.value = String(Math.round(tilt.target));
+    slider.value = String(Math.round(wrapAngle(tilt.target)));
   };
   game.onStatusChange();
 }

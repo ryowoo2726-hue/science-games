@@ -1,0 +1,83 @@
+{
+  "id": "dive-02",
+  "name": "이어지는 물길",
+  "difficulty": 2,
+  "width": 1152,
+  "height": 624,
+  "cellSize": 12,
+  "waterFraction": 0.5,
+  "start": {
+    "x": 84,
+    "y": 396
+  },
+  "exit": {
+    "x": 1056,
+    "y": 252,
+    "width": 60,
+    "height": 120
+  },
+  "walls": [
+    {
+      "x": 0,
+      "y": 0,
+      "width": 1152,
+      "height": 24
+    },
+    {
+      "x": 0,
+      "y": 600,
+      "width": 1152,
+      "height": 24
+    },
+    {
+      "x": 0,
+      "y": 24,
+      "width": 24,
+      "height": 576
+    },
+    {
+      "x": 1128,
+      "y": 24,
+      "width": 24,
+      "height": 576
+    },
+    {
+      "x": 144,
+      "y": 24,
+      "width": 24,
+      "height": 408
+    },
+    {
+      "x": 576,
+      "y": 192,
+      "width": 24,
+      "height": 408
+    },
+    {
+      "x": 1008,
+      "y": 24,
+      "width": 24,
+      "height": 408
+    }
+  ],
+  "checkpoints": [
+    {
+      "x": 156,
+      "y": 516,
+      "label": "01",
+      "hint": ""
+    },
+    {
+      "x": 588,
+      "y": 108,
+      "label": "02",
+      "hint": ""
+    },
+    {
+      "x": 1020,
+      "y": 516,
+      "label": "03",
+      "hint": ""
+    }
+  ]
+}
