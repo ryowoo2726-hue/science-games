@@ -2,7 +2,7 @@
 
 태블릿을 자동차 핸들처럼 돌려 물과 중력의 방향을 바꾸고, 잠수정 탱크의 물을 조절해 탈출하는 과학 게임입니다. **360° 조작, 연속적인 입자 물, 11개 미로, 가시와 누수·정비소, 스위치 수문, 밀도가 다른 액체, 전체 화면**을 지원합니다.
 
-**[게임 열기](https://ryowoo2726-hue.github.io/buoyancy_game/)**
+**[게임 열기](https://ryowoo2726-hue.github.io/science-games/games/buoyancy/)**
 
 ## 실행과 개발
 
