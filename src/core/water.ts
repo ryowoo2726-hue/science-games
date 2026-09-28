@@ -33,6 +33,8 @@ export class Water {
   material = new Float64Array(0);
   count = 0;
   revision = 0;
+  geometryRevision = 0;
+  activeWalls: Rect[];
   private allCount = 0;
   private volume = 0;
   private unitVolume = 0;
@@ -61,12 +63,8 @@ export class Water {
     this.rows = stage.height / this.size;
     if (!Number.isInteger(this.cols) || !Number.isInteger(this.rows)) throw new Error('미로 크기는 cellSize의 배수여야 합니다.');
     this.solid = new Uint8Array(this.cols * this.rows);
-    for (const wall of stage.walls) {
-      if ([wall.x, wall.y, wall.width, wall.height].some(v => v % this.size)) throw new Error('벽 좌표와 크기는 cellSize의 배수여야 합니다.');
-      for (let row = wall.y / this.size; row < (wall.y + wall.height) / this.size; row++) {
-        for (let col = wall.x / this.size; col < (wall.x + wall.width) / this.size; col++) this.solid[row * this.cols + col] = 1;
-      }
-    }
+    this.activeWalls = [...stage.walls, ...(stage.doors ?? [])];
+    this.rasterizeWalls();
     this.openCells = this.solid.reduce((n, s) => n + (s ? 0 : 1), 0);
     this.mass = new Float64Array(this.solid.length);
     this.previousMass = new Float64Array(this.solid.length);
@@ -87,12 +85,51 @@ export class Water {
     this.reset();
   }
 
+  private rasterizeWalls(): void {
+    this.solid.fill(0);
+    for (const wall of this.activeWalls) {
+      if ([wall.x, wall.y, wall.width, wall.height].some(v => v % this.size)) throw new Error('벽 좌표와 크기는 cellSize의 배수여야 합니다.');
+      for (let row = wall.y / this.size; row < (wall.y + wall.height) / this.size; row++) {
+        for (let col = wall.x / this.size; col < (wall.x + wall.width) / this.size; col++) this.solid[row * this.cols + col] = 1;
+      }
+    }
+    this.geometryRevision++;
+  }
+
+  /** Doors latch open. Rebuild only boundaries, preserving every liquid particle. */
+  openDoors(open: ReadonlySet<string>): void {
+    const walls = [...this.stage.walls, ...(this.stage.doors ?? []).filter(d => !open.has(d.id))];
+    if (walls.length === this.activeWalls.length) return;
+    this.activeWalls = walls;
+    this.rasterizeWalls();
+    const boundary: Vector[] = [];
+    const rowHeight = SPACING * Math.sqrt(3) / 2;
+    for (let row = 0, y = SPACING / 2; y < this.stage.height; row++, y += rowHeight) {
+      for (let x = SPACING / 2 + (row & 1) * SPACING / 2; x < this.stage.width; x += SPACING) {
+        if (this.isSolidAt(x, y)) boundary.push({ x, y });
+      }
+    }
+    const length = this.count + boundary.length;
+    for (const key of ['x', 'y', 'previousX', 'previousY'] as const) {
+      const next = new Float64Array(length);
+      next.set(this[key].subarray(0, this.count));
+      boundary.forEach((p, i) => { next[this.count + i] = key.endsWith('X') || key === 'x' ? p.x : p.y; });
+      this[key] = next;
+    }
+    this.allCount = length;
+    this.next = new Int32Array(length);
+    this.rebuildHash(); this.updateObservation(); this.previousMass.set(this.mass);
+    this.revision++;
+  }
+
   isSolidAt(x: number, y: number): boolean {
     if (x < 0 || y < 0 || x >= this.stage.width || y >= this.stage.height) return true;
     return !!this.solid[Math.floor(y / this.size) * this.cols + Math.floor(x / this.size)];
   }
 
   reset(region?: Rect): void {
+    this.activeWalls = [...this.stage.walls, ...(this.stage.doors ?? [])];
+    this.rasterizeWalls();
     const wetArea = (level: number) => {
       let area = 0;
       for (let i = 0; i < this.solid.length; i++) {
@@ -113,7 +150,7 @@ export class Water {
       for (let px = SPACING / 2 + (row & 1) * SPACING / 2; px < this.stage.width; px += SPACING) {
         if (this.isSolidAt(px, py)) { boundary.push({ x: px, y: py }); continue; }
         const wet = region ? px >= region.x && px < region.x + region.width && py >= region.y && py < region.y + region.height : py >= level;
-        if (!wet || this.stage.walls.some(w => px > w.x - RADIUS && px < w.x + w.width + RADIUS && py > w.y - RADIUS && py < w.y + w.height + RADIUS)) continue;
+        if (!wet || this.activeWalls.some(w => px > w.x - RADIUS && px < w.x + w.width + RADIUS && py > w.y - RADIUS && py < w.y + w.height + RADIUS)) continue;
         fluid.push({ x: px, y: py });
       }
     }
@@ -170,7 +207,7 @@ export class Water {
 
   private constrainWalls(i: number, oldX: number, oldY: number): void {
     let x = this.x[i], y = this.y[i];
-    for (const w of this.stage.walls) {
+    for (const w of this.activeWalls) {
       const left = w.x - RADIUS, right = w.x + w.width + RADIUS, top = w.y - RADIUS, bottom = w.y + w.height + RADIUS;
       if (x <= left || x >= right || y <= top || y >= bottom) continue;
       if (oldX <= left) x = left;
@@ -270,14 +307,14 @@ export class Water {
         if (c >= 0 && c < this.cols && r >= 0 && r < this.rows && !this.solid[id] && sum > 0) this.mass[id] += (n % 2 ? fx : 1 - fx) * (n >= 2 ? fy : 1 - fy) / sum * this.unitVolume / this.size ** 2;
       }
       this.nearWall[i] = 0;
-      for (const w of this.stage.walls) {
+      for (const w of this.activeWalls) {
         if (this.x[i] > w.x - SUPPORT && this.x[i] < w.x + w.width + SUPPORT && this.y[i] > w.y - SUPPORT && this.y[i] < w.y + w.height + SUPPORT) { this.nearWall[i] = 1; break; }
       }
     }
   }
 
   private occluded(ax: number, ay: number, bx: number, by: number): boolean {
-    for (const w of this.stage.walls) {
+    for (const w of this.activeWalls) {
       if (Math.max(ax, bx) <= w.x || Math.min(ax, bx) >= w.x + w.width || Math.max(ay, by) <= w.y || Math.min(ay, by) >= w.y + w.height) continue;
       const dx = bx - ax, dy = by - ay;
       const tx1 = Math.abs(dx) < 1e-8 ? -Infinity : (w.x - ax) / dx;

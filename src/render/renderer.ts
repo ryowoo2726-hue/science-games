@@ -1,6 +1,7 @@
 import type { Game } from '../game/game';
 import { traceSurface } from './surface';
-import type { Vector } from '../types';
+import { gravityAt, type Vector } from '../types';
+import { spikeTriangles } from '../core/mechanics';
 
 const TAU = Math.PI * 2;
 const font = '"Segoe UI", "Malgun Gothic", sans-serif';
@@ -15,6 +16,7 @@ export class Renderer {
   private materialImage!: ImageData;
   private waterStamp = -1;
   private lastBlend = -1;
+  private geometryStamp = -1;
   private width = 0;
   private height = 0;
   private pixelRatio = 1;
@@ -51,6 +53,12 @@ export class Renderer {
     this.waterCanvas.width = stage.width; this.waterCanvas.height = stage.height;
     this.materialCanvas.width = water.fieldCols; this.materialCanvas.height = water.fieldRows;
     this.materialImage = this.materialContext.createImageData(water.fieldCols, water.fieldRows);
+    this.rebuildOpenArea();
+  }
+
+  private rebuildOpenArea(): void {
+    const { water } = this.game;
+    this.geometryStamp = water.geometryRevision;
     this.openArea = new Path2D();
     for (let row = 0; row < water.rows; row++) {
       let start = -1;
@@ -79,6 +87,7 @@ export class Renderer {
     ctx.fillRect(0, 0, stage.width, stage.height);
 
     this.drawExit();
+    if (this.geometryStamp !== game.water.geometryRevision) this.rebuildOpenArea();
     const stamp = game.water.revision;
     const blend = game.renderBlend;
     if (this.waterStamp !== stamp || Math.abs(this.lastBlend - blend) > .001) {
@@ -88,6 +97,7 @@ export class Renderer {
     }
     ctx.drawImage(this.waterCanvas, 0, 0);
     this.drawWalls();
+    this.drawMechanics();
     this.drawWaypoints();
     this.drawSubmarine();
   }
@@ -134,7 +144,7 @@ export class Renderer {
     for (const wall of this.game.stage.walls) {
       ctx.fillStyle = '#355165';
       ctx.fillRect(wall.x, wall.y, wall.width, wall.height);
-      ctx.strokeStyle = '#526d7d';
+      ctx.strokeStyle = this.game.stage.accent ?? '#526d7d';
       ctx.lineWidth = 2;
       ctx.strokeRect(wall.x + 1, wall.y + 1, wall.width - 2, wall.height - 2);
       const inner = wall.x > 24 && wall.y > 24 || (wall.x > 24 && wall.height > 48);
@@ -156,6 +166,63 @@ export class Renderer {
     }
   }
 
+  private drawMechanics(): void {
+    const { ctx, game } = this;
+    ctx.textAlign = 'center';
+    for (const pad of game.stage.repairs ?? []) {
+      ctx.fillStyle = 'rgba(99,223,165,.12)';
+      ctx.strokeStyle = '#77e6b0'; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.roundRect(pad.x, pad.y, pad.width, pad.height, 12); ctx.fill(); ctx.stroke();
+      ctx.font = `700 23px ${font}`; ctx.fillStyle = '#a3f5cd';
+      ctx.fillText('＋', pad.x + pad.width / 2, pad.y + 24);
+      ctx.font = `600 10px ${font}`; ctx.fillText('정비소', pad.x + pad.width / 2, pad.y + pad.height - 8);
+    }
+    for (const spike of game.stage.spikes ?? []) {
+      ctx.fillStyle = '#dc6d7d'; ctx.strokeStyle = '#ffc0ba'; ctx.lineWidth = 1.3;
+      for (const points of spikeTriangles(spike)) {
+        ctx.beginPath(); ctx.moveTo(points[0].x, points[0].y);
+        for (const p of points.slice(1)) ctx.lineTo(p.x, p.y);
+        ctx.closePath(); ctx.fill(); ctx.stroke();
+      }
+    }
+    for (const door of game.stage.doors ?? []) {
+      const open = game.openedDoors.has(door.id);
+      const progress = open ? Math.min(1, (game.elapsed - (game.doorOpenedAt.get(door.id) ?? 0)) / .45) : 0;
+      ctx.save();
+      ctx.strokeStyle = open ? '#97edba' : '#76d8f0'; ctx.lineWidth = 2;
+      ctx.globalAlpha = open ? 1 - progress * .85 : 1;
+      if (!open || progress < 1) {
+        ctx.fillStyle = open ? '#337965' : '#296580';
+        const vertical = door.height > door.width;
+        ctx.fillRect(door.x, door.y, vertical ? door.width : door.width * (1 - progress), vertical ? door.height * (1 - progress) : door.height);
+        ctx.beginPath();
+        for (let t = 8; t < (vertical ? door.height : door.width); t += 18) {
+          if (vertical) { ctx.moveTo(door.x + 3, door.y + t); ctx.lineTo(door.x + door.width - 3, door.y + t); }
+          else { ctx.moveTo(door.x + t, door.y + 3); ctx.lineTo(door.x + t, door.y + door.height - 3); }
+        }
+        ctx.stroke();
+      }
+      ctx.setLineDash(open ? [4, 5] : []); ctx.strokeRect(door.x, door.y, door.width, door.height); ctx.setLineDash([]);
+      const cx = door.x + door.width / 2, cy = door.y + door.height / 2;
+      const label = open ? '열림' : door.switches.join('+');
+      ctx.font = `700 13px ${font}`;
+      const labelWidth = Math.max(32, ctx.measureText(label).width + 12);
+      ctx.fillStyle = '#123a4e'; ctx.beginPath(); ctx.roundRect(cx - labelWidth / 2, cy - 12, labelWidth, 24, 6); ctx.fill();
+      ctx.fillStyle = open ? '#c3f7d5' : '#ceeff9'; ctx.fillText(label, cx, cy + 5);
+      ctx.restore();
+    }
+    for (const button of game.stage.switches ?? []) {
+      const pressed = game.pressedSwitches.has(button.id);
+      ctx.strokeStyle = pressed ? '#9cf1bc' : '#80dbed'; ctx.lineWidth = 2;
+      ctx.fillStyle = pressed ? '#276b58' : '#235674';
+      ctx.beginPath(); ctx.arc(button.x, button.y, 23, 0, TAU); ctx.fill(); ctx.stroke();
+      ctx.fillStyle = pressed ? '#b5f8ce' : '#a7edff';
+      ctx.font = `700 17px ${font}`; ctx.fillText(button.label, button.x, button.y + 6);
+      ctx.font = `600 10px ${font}`; ctx.fillStyle = '#badce5';
+      ctx.fillText(pressed ? `${button.label} 작동` : '스위치', button.x, button.y + 39);
+    }
+  }
+
   private drawExit(): void {
     const ctx = this.ctx;
     const exit = this.game.stage.exit;
@@ -170,7 +237,9 @@ export class Renderer {
     ctx.textAlign = 'center';
     ctx.fillText('출구', exit.x + exit.width / 2, exit.y - 16);
     ctx.font = `700 30px ${font}`;
-    ctx.fillText('→', exit.x + exit.width / 2, exit.y + exit.height / 2 + 8);
+    const dx = exit.x + exit.width / 2 - this.game.stage.start.x;
+    const dy = exit.y + exit.height / 2 - this.game.stage.start.y;
+    ctx.fillText(Math.abs(dx) > Math.abs(dy) ? dx < 0 ? '←' : '→' : dy < 0 ? '↑' : '↓', exit.x + exit.width / 2, exit.y + exit.height / 2 + 8);
     ctx.font = `600 10px ${font}`;
     ctx.fillText('EXIT', exit.x + exit.width / 2, exit.y + exit.height - 16);
   }
@@ -235,6 +304,18 @@ export class Renderer {
     ctx.beginPath(); ctx.arc(9, -3, 4.3, 0, TAU); ctx.fill();
     ctx.fillStyle = '#d3f3f6'; ctx.beginPath(); ctx.arc(8, -5, 1.7, 0, TAU); ctx.fill();
     ctx.restore();
+    if (submarine.leakRemaining > 0) {
+      const g = gravityAt(this.game.tilt.angle);
+      ctx.strokeStyle = '#ff8f9b'; ctx.lineWidth = 2.5;
+      ctx.beginPath(); ctx.moveTo(pos.x - 19, pos.y - 12); ctx.lineTo(pos.x - 13, pos.y - 6); ctx.lineTo(pos.x - 19, pos.y); ctx.stroke();
+      ctx.fillStyle = '#87dcea';
+      for (let i = 0; i < 4; i++) {
+        const life = (elapsed * 2.2 + i / 4) % 1;
+        ctx.globalAlpha = 1 - life;
+        ctx.beginPath(); ctx.arc(pos.x - 20 - life * (g.x * 30 + 8), pos.y - 8 - life * g.y * 30, 2 + life * 3, 0, TAU); ctx.fill();
+      }
+      ctx.globalAlpha = 1;
+    }
     if (status === 'ready') {
       ctx.strokeStyle = `rgba(255,215,115,${.25 + .12 * Math.sin(elapsed)})`;
       ctx.lineWidth = 1.5; ctx.beginPath(); ctx.arc(pos.x, pos.y, 40, 0, TAU); ctx.stroke();

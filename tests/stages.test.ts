@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { stages } from '../src/stages';
 import { Game } from '../src/game/game';
 import { Water } from '../src/core/water';
-import { escapePath } from './support/path';
+import { escapePath, puzzlePlan } from './support/path';
 
 describe('eleven progressively harder stages', () => {
   it('contains the original and ten distinct increasingly difficult mazes', () => {
@@ -10,15 +10,32 @@ describe('eleven progressively harder stages', () => {
     expect(new Set(stages.map(s => s.id)).size).toBe(11);
     expect(new Set(stages.map(s => JSON.stringify(s.walls))).size).toBe(11);
     expect(stages.map(s => s.difficulty)).toEqual([1,2,3,4,5,6,7,8,9,10,11]);
-    expect(stages[10].checkpoints.length).toBeGreaterThan(stages[0].checkpoints.length);
+    expect(new Set(stages.map(s => `${s.start.x},${s.start.y}`)).size).toBeGreaterThan(6);
+    expect(stages.some(s => s.start.x > s.exit.x)).toBe(true);
+    expect(stages[10].doors).toHaveLength(3);
   });
   it.each(stages)('has a hull-sized route through $id', stage => {
-    const path = escapePath(stage);
-    expect(path.length).toBeGreaterThan(2);
+    const plan = puzzlePlan(stage);
+    expect(plan.pressed.size).toBe(stage.switches?.length ?? 0);
+    expect(plan.open.size).toBe(stage.doors?.length ?? 0);
+    expect(plan.legs.every(leg => leg.path.length > 0)).toBe(true);
     const water = new Water(stage);
     expect(water.isSolidAt(stage.start.x, stage.start.y)).toBe(false);
     expect(water.totalMass()).toBeCloseTo(water.openCells * stage.waterFraction, 8);
     expect(water.count).toBeGreaterThan(1000);
+  });
+  it('makes switches necessary and gives every damaged stage a safe repair station', () => {
+    for (const stage of stages) {
+      if (stage.doors?.length) expect(escapePath(stage, [...stage.walls, ...stage.doors])).toHaveLength(0);
+      for (const door of stage.doors ?? []) {
+        expect(door.switches.length).toBeGreaterThan(0);
+        expect(door.switches.every(id => stage.switches?.some(button => button.id === id))).toBe(true);
+      }
+      if (stage.spikes?.length) expect(stage.repairs?.length).toBeGreaterThan(0);
+      for (const pad of stage.repairs ?? []) {
+        expect(stage.walls.some(w => pad.x < w.x + w.width && pad.x + pad.width > w.x && pad.y < w.y + w.height && pad.y + pad.height > w.y)).toBe(false);
+      }
+    }
   });
   it('starts the next stage with fresh physics and preserves the sensor controller', () => {
     const game = new Game(stages[0], stages), tilt = game.tilt, previousWater = game.water;

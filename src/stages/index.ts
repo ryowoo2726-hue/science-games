@@ -10,4 +10,4 @@ import stage9 from './dive-09.json';
 import stage10 from './dive-10.json';
 import stage11 from './dive-11.json';
 import type { Stage } from '../types';
-export const stages: Stage[] = [{ ...first, difficulty: 1 }, stage2, stage3, stage4, stage5, stage6, stage7, stage8, stage9, stage10, stage11];
+export const stages = [{ ...first, difficulty: 1 }, stage2, stage3, stage4, stage5, stage6, stage7, stage8, stage9, stage10, stage11] as Stage[];

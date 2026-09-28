@@ -1,20 +1,22 @@
 {
   "id": "dive-04",
-  "name": "중간 높이의 문",
-  "difficulty": 4,
   "width": 1152,
   "height": 624,
   "cellSize": 12,
   "waterFraction": 0.5,
+  "difficulty": 4,
+  "name": "가시 천장",
+  "mission": "아래로 내려가는 지그재그 길입니다. 천장과 바닥의 가시를 피하고 초록 정비소를 이용하세요.",
+  "accent": "#eea9a6",
   "start": {
-    "x": 84,
-    "y": 396
+    "x": 120,
+    "y": 96
   },
   "exit": {
-    "x": 1056,
-    "y": 252,
-    "width": 60,
-    "height": 120
+    "x": 96,
+    "y": 516,
+    "width": 96,
+    "height": 60
   },
   "walls": [
     {
@@ -42,66 +44,73 @@
       "height": 576
     },
     {
-      "x": 144,
-      "y": 24,
-      "width": 24,
-      "height": 432
+      "x": 24,
+      "y": 156,
+      "width": 780,
+      "height": 24
     },
     {
-      "x": 432,
-      "y": 168,
-      "width": 24,
-      "height": 432
+      "x": 348,
+      "y": 312,
+      "width": 780,
+      "height": 24
     },
     {
-      "x": 720,
-      "y": 24,
-      "width": 24,
-      "height": 216
-    },
-    {
-      "x": 720,
-      "y": 384,
-      "width": 24,
-      "height": 216
-    },
-    {
-      "x": 1008,
-      "y": 168,
-      "width": 24,
-      "height": 432
-    },
-    {
-      "x": 168,
-      "y": 276,
-      "width": 36,
+      "x": 24,
+      "y": 468,
+      "width": 780,
       "height": 24
     }
   ],
-  "checkpoints": [
+  "spikes": [
     {
-      "x": 156,
-      "y": 528,
-      "label": "01",
-      "hint": ""
+      "x": 360,
+      "y": 180,
+      "width": 240,
+      "height": 24,
+      "direction": "down"
     },
     {
-      "x": 444,
-      "y": 96,
-      "label": "02",
-      "hint": ""
+      "x": 480,
+      "y": 288,
+      "width": 192,
+      "height": 24,
+      "direction": "up"
     },
     {
-      "x": 732,
-      "y": 312,
-      "label": "03",
-      "hint": ""
+      "x": 372,
+      "y": 492,
+      "width": 216,
+      "height": 24,
+      "direction": "down"
     },
     {
-      "x": 1020,
-      "y": 96,
-      "label": "04",
-      "hint": ""
+      "x": 936,
+      "y": 576,
+      "width": 144,
+      "height": 24,
+      "direction": "up"
     }
-  ]
+  ],
+  "repairs": [
+    {
+      "x": 912,
+      "y": 216,
+      "width": 96,
+      "height": 48
+    },
+    {
+      "x": 108,
+      "y": 384,
+      "width": 96,
+      "height": 48
+    },
+    {
+      "x": 864,
+      "y": 528,
+      "width": 96,
+      "height": 48
+    }
+  ],
+  "checkpoints": []
 }

@@ -1,20 +1,22 @@
 {
   "id": "dive-10",
-  "name": "밀도의 미로",
-  "difficulty": 10,
   "width": 1152,
   "height": 624,
   "cellSize": 12,
   "waterFraction": 0.54,
+  "difficulty": 10,
+  "name": "역류 실험실",
+  "mission": "오른쪽에서 왼쪽으로 탈출하세요. A·B 스위치를 모두 눌러 수문을 열고 밀도가 다른 물과 누수를 관리하세요.",
+  "accent": "#caa4d9",
   "start": {
-    "x": 84,
-    "y": 396
+    "x": 1008,
+    "y": 96
   },
   "exit": {
-    "x": 1056,
-    "y": 252,
-    "width": 60,
-    "height": 120
+    "x": 96,
+    "y": 516,
+    "width": 96,
+    "height": 60
   },
   "walls": [
     {
@@ -42,108 +44,87 @@
       "height": 576
     },
     {
-      "x": 144,
-      "y": 24,
-      "width": 24,
-      "height": 492
-    },
-    {
       "x": 312,
-      "y": 24,
-      "width": 24,
-      "height": 156
-    },
-    {
-      "x": 312,
-      "y": 264,
-      "width": 24,
-      "height": 336
-    },
-    {
-      "x": 492,
-      "y": 24,
-      "width": 24,
-      "height": 492
-    },
-    {
-      "x": 660,
-      "y": 24,
-      "width": 24,
-      "height": 252
-    },
-    {
-      "x": 660,
-      "y": 360,
-      "width": 24,
-      "height": 240
-    },
-    {
-      "x": 840,
-      "y": 24,
-      "width": 24,
-      "height": 372
-    },
-    {
-      "x": 840,
-      "y": 480,
-      "width": 24,
-      "height": 120
-    },
-    {
-      "x": 1008,
-      "y": 108,
-      "width": 24,
-      "height": 492
-    },
-    {
-      "x": 168,
-      "y": 276,
-      "width": 36,
+      "y": 168,
+      "width": 816,
       "height": 24
     },
     {
-      "x": 516,
-      "y": 408,
-      "width": 36,
+      "x": 24,
+      "y": 336,
+      "width": 720,
+      "height": 24
+    },
+    {
+      "x": 360,
+      "y": 480,
+      "width": 768,
       "height": 24
     }
   ],
-  "checkpoints": [
+  "switches": [
     {
-      "x": 156,
-      "y": 558,
-      "label": "01",
-      "hint": ""
+      "id": "A",
+      "label": "A",
+      "x": 144,
+      "y": 264
     },
     {
-      "x": 324,
-      "y": 222,
-      "label": "02",
-      "hint": ""
+      "id": "B",
+      "label": "B",
+      "x": 984,
+      "y": 264
+    }
+  ],
+  "doors": [
+    {
+      "x": 744,
+      "y": 336,
+      "width": 384,
+      "height": 24,
+      "id": "AB",
+      "label": "AB",
+      "switches": [
+        "A",
+        "B"
+      ]
+    }
+  ],
+  "spikes": [
+    {
+      "x": 600,
+      "y": 192,
+      "width": 192,
+      "height": 24,
+      "direction": "down"
     },
     {
-      "x": 504,
-      "y": 558,
-      "label": "03",
-      "hint": ""
+      "x": 864,
+      "y": 456,
+      "width": 168,
+      "height": 24,
+      "direction": "up"
     },
     {
-      "x": 672,
-      "y": 318,
-      "label": "04",
-      "hint": ""
+      "x": 24,
+      "y": 396,
+      "width": 24,
+      "height": 96,
+      "direction": "right"
+    }
+  ],
+  "repairs": [
+    {
+      "x": 408,
+      "y": 240,
+      "width": 96,
+      "height": 48
     },
     {
-      "x": 852,
-      "y": 438,
-      "label": "05",
-      "hint": ""
-    },
-    {
-      "x": 1020,
-      "y": 66,
-      "label": "06",
-      "hint": ""
+      "x": 576,
+      "y": 396,
+      "width": 96,
+      "height": 48
     }
   ],
   "densityZones": [
@@ -153,7 +134,7 @@
       "width": 528,
       "height": 576,
       "density": 0.78,
-      "label": "저밀도 액체"
+      "label": "저밀도 물"
     },
     {
       "x": 576,
@@ -161,7 +142,8 @@
       "width": 552,
       "height": 576,
       "density": 1.25,
-      "label": "고밀도 액체"
+      "label": "고밀도 물"
     }
-  ]
+  ],
+  "checkpoints": []
 }

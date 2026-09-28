@@ -1,20 +1,22 @@
 {
   "id": "dive-09",
-  "name": "좁아지는 창",
-  "difficulty": 9,
   "width": 1152,
   "height": 624,
   "cellSize": 12,
   "waterFraction": 0.54,
+  "difficulty": 9,
+  "name": "침몰한 정비 기지",
+  "mission": "기지 곳곳의 A·B·C 스위치를 찾아 중앙 대피소 문을 여세요. 가시를 피해 정비소를 경유할 수 있습니다.",
+  "accent": "#a9cbb1",
   "start": {
-    "x": 84,
-    "y": 396
+    "x": 144,
+    "y": 480
   },
   "exit": {
-    "x": 1056,
-    "y": 252,
-    "width": 60,
-    "height": 120
+    "x": 516,
+    "y": 264,
+    "width": 96,
+    "height": 84
   },
   "walls": [
     {
@@ -42,120 +44,119 @@
       "height": 576
     },
     {
-      "x": 144,
+      "x": 552,
       "y": 24,
       "width": 24,
-      "height": 480
+      "height": 120
     },
     {
-      "x": 312,
-      "y": 24,
+      "x": 552,
+      "y": 480,
       "width": 24,
-      "height": 156
+      "height": 120
     },
-    {
-      "x": 312,
-      "y": 276,
-      "width": 24,
-      "height": 324
-    },
-    {
-      "x": 492,
-      "y": 24,
-      "width": 24,
-      "height": 480
-    },
-    {
-      "x": 660,
-      "y": 24,
-      "width": 24,
-      "height": 240
-    },
-    {
-      "x": 660,
-      "y": 360,
-      "width": 24,
-      "height": 240
-    },
-    {
-      "x": 840,
-      "y": 24,
-      "width": 24,
-      "height": 480
-    },
-    {
-      "x": 1008,
-      "y": 120,
-      "width": 24,
-      "height": 480
-    },
-    {
-      "x": 168,
-      "y": 276,
-      "width": 36,
-      "height": 24
-    },
-    {
-      "x": 516,
-      "y": 408,
-      "width": 36,
-      "height": 24
-    }
-  ],
-  "checkpoints": [
-    {
-      "x": 156,
-      "y": 552,
-      "label": "01",
-      "hint": ""
-    },
-    {
-      "x": 324,
-      "y": 228,
-      "label": "02",
-      "hint": ""
-    },
-    {
-      "x": 504,
-      "y": 552,
-      "label": "03",
-      "hint": ""
-    },
-    {
-      "x": 672,
-      "y": 312,
-      "label": "04",
-      "hint": ""
-    },
-    {
-      "x": 852,
-      "y": 552,
-      "label": "05",
-      "hint": ""
-    },
-    {
-      "x": 1020,
-      "y": 72,
-      "label": "06",
-      "hint": ""
-    }
-  ],
-  "densityZones": [
     {
       "x": 24,
-      "y": 24,
-      "width": 528,
-      "height": 576,
-      "density": 0.82,
-      "label": "저밀도 액체"
+      "y": 300,
+      "width": 336,
+      "height": 24
     },
     {
-      "x": 576,
-      "y": 24,
-      "width": 552,
-      "height": 576,
-      "density": 1.22,
-      "label": "고밀도 액체"
+      "x": 792,
+      "y": 300,
+      "width": 336,
+      "height": 24
+    },
+    {
+      "x": 456,
+      "y": 216,
+      "width": 240,
+      "height": 24
+    },
+    {
+      "x": 456,
+      "y": 384,
+      "width": 240,
+      "height": 24
+    },
+    {
+      "x": 456,
+      "y": 240,
+      "width": 24,
+      "height": 144
     }
-  ]
+  ],
+  "switches": [
+    {
+      "id": "A",
+      "label": "A",
+      "x": 192,
+      "y": 108
+    },
+    {
+      "id": "B",
+      "label": "B",
+      "x": 984,
+      "y": 120
+    },
+    {
+      "id": "C",
+      "label": "C",
+      "x": 984,
+      "y": 504
+    }
+  ],
+  "doors": [
+    {
+      "x": 672,
+      "y": 240,
+      "width": 24,
+      "height": 144,
+      "id": "ABC",
+      "label": "ABC",
+      "switches": [
+        "A",
+        "B",
+        "C"
+      ]
+    }
+  ],
+  "spikes": [
+    {
+      "x": 120,
+      "y": 276,
+      "width": 168,
+      "height": 24,
+      "direction": "up"
+    },
+    {
+      "x": 816,
+      "y": 324,
+      "width": 144,
+      "height": 24,
+      "direction": "down"
+    },
+    {
+      "x": 120,
+      "y": 576,
+      "width": 144,
+      "height": 24,
+      "direction": "up"
+    }
+  ],
+  "repairs": [
+    {
+      "x": 744,
+      "y": 84,
+      "width": 96,
+      "height": 48
+    },
+    {
+      "x": 336,
+      "y": 456,
+      "width": 96,
+      "height": 48
+    }
+  ],
+  "checkpoints": []
 }

@@ -40,16 +40,17 @@ export function createView(): HTMLCanvasElement {
         </nav>
       </header>
       <div id="sensor-message" class="sensor-message" role="status" hidden></div>
+      <div id="game-message" class="game-message" role="status" hidden></div>
       <section class="game-controls" aria-label="잠수정 조작">
         <button id="drain" class="tank-button drain" disabled aria-pressed="false">${icon('drop')}<span>물 빼기<small>W</small></span></button>
         <div class="center-controls">
-          <div class="tank-readout"><span>탱크</span><div class="tank-gauge" aria-hidden="true"><i id="tank-level"></i></div><strong id="hud-tank">50%</strong></div>
+          <div class="tank-readout"><span id="tank-label">탱크</span><div class="tank-gauge" aria-hidden="true"><i id="tank-level"></i></div><strong id="hud-tank">50%</strong></div>
           <div id="manual-control" class="manual-control"><span>−180°</span><input id="tilt-slider" type="range" min="-180" max="180" step="1" value="0" aria-label="360도 기울기 각도" disabled><span>+180°</span></div>
         </div>
         <button id="fill" class="tank-button fill" disabled aria-pressed="false">${icon('drop')}<span>물 채우기<small>S</small></span></button>
       </section>
       <div id="start-overlay" class="game-overlay"><div class="overlay-card">
-        <span class="sub-mark" aria-hidden="true">◉</span><h1>부력 탐험</h1><p id="stage-name">첫 번째 잠수</p><p>태블릿을 정면으로 보고 핸들처럼 돌리세요.</p>
+        <span class="sub-mark" aria-hidden="true">◉</span><h1>부력 탐험</h1><p id="stage-name">첫 번째 잠수</p><p id="stage-mission"></p><p class="sensor-hint">태블릿을 정면으로 보고 핸들처럼 돌리세요.</p>
         <button id="sensor-start" class="primary-button">태블릿 센서로 시작</button>
         <button id="manual-start" class="secondary-button">수동 조작으로 시작</button>
       </div></div>
@@ -143,6 +144,7 @@ export function bindView(game: Game, renderer: Renderer): void {
     const playing = game.status === 'playing';
     selector.value = String(game.stageIndex);
     text('stage-name', `${game.stageIndex + 1} / ${game.stages.length} · ${game.stage.name}`);
+    text('stage-mission', game.stage.mission ?? '탱크의 물과 기울기를 조절해 출구에 도착하세요.');
     const last = game.stageIndex === game.stages.length - 1;
     text('win-title', last ? '모든 단계 완료!' : '탈출 성공!');
     text('next-stage', last ? '처음부터 다시' : `다음 단계 · ${game.stageIndex + 2}`);
@@ -169,6 +171,11 @@ export function bindView(game: Game, renderer: Renderer): void {
     text('water-density', submarine.submerged > .02 ? submarine.waterDensity.toFixed(2) : '—');
     el('water-density').className = submarine.waterDensity > 1.02 ? 'dense-liquid' : submarine.waterDensity < .98 ? 'light-liquid' : '';
     text('hud-tank', `${Math.round(submarine.tank * 100)}%`);
+    text('tank-label', submarine.leakRemaining > 0 ? `누수 ${Math.ceil(submarine.leakRemaining)}초` : '탱크');
+    el('tank-label').className = submarine.leakRemaining > 0 ? 'leaking' : '';
+    const notice = el('game-message');
+    text('game-message', game.message);
+    notice.hidden = game.status !== 'playing' || game.elapsed >= game.messageUntil || !game.message;
     el('tank-level').style.width = `${submarine.tank * 100}%`;
     slider.value = String(Math.round(wrapAngle(tilt.target)));
   };

@@ -1,20 +1,22 @@
 {
   "id": "dive-06",
-  "name": "가벼운 물과 무거운 물",
-  "difficulty": 6,
   "width": 1152,
   "height": 624,
   "cellSize": 12,
   "waterFraction": 0.5,
+  "difficulty": 6,
+  "name": "두 바다의 만남",
+  "mission": "왼쪽의 A·B 스위치를 모두 눌러 혼합 수문을 여세요. 금색 물과 보라색 물은 부력이 다릅니다.",
+  "accent": "#e9c887",
   "start": {
-    "x": 84,
-    "y": 396
+    "x": 120,
+    "y": 480
   },
   "exit": {
-    "x": 1056,
-    "y": 252,
-    "width": 60,
-    "height": 120
+    "x": 1008,
+    "y": 84,
+    "width": 84,
+    "height": 96
   },
   "walls": [
     {
@@ -42,78 +44,79 @@
       "height": 576
     },
     {
-      "x": 144,
+      "x": 552,
       "y": 24,
       "width": 24,
-      "height": 456
+      "height": 216
     },
     {
-      "x": 360,
-      "y": 144,
+      "x": 552,
+      "y": 384,
       "width": 24,
-      "height": 456
+      "height": 216
     },
     {
-      "x": 576,
-      "y": 24,
-      "width": 24,
-      "height": 228
-    },
-    {
-      "x": 576,
-      "y": 372,
-      "width": 24,
-      "height": 228
-    },
-    {
-      "x": 792,
-      "y": 144,
-      "width": 24,
-      "height": 456
-    },
-    {
-      "x": 1008,
-      "y": 24,
-      "width": 24,
-      "height": 456
-    },
-    {
-      "x": 168,
-      "y": 276,
-      "width": 36,
+      "x": 24,
+      "y": 288,
+      "width": 324,
       "height": 24
+    },
+    {
+      "x": 756,
+      "y": 180,
+      "width": 24,
+      "height": 300
     }
   ],
-  "checkpoints": [
+  "switches": [
     {
-      "x": 156,
-      "y": 540,
-      "label": "01",
-      "hint": ""
+      "id": "A",
+      "label": "A",
+      "x": 240,
+      "y": 480
     },
     {
-      "x": 372,
-      "y": 84,
-      "label": "02",
-      "hint": ""
-    },
+      "id": "B",
+      "label": "B",
+      "x": 264,
+      "y": 120
+    }
+  ],
+  "doors": [
     {
-      "x": 588,
+      "x": 552,
+      "y": 240,
+      "width": 24,
+      "height": 144,
+      "id": "AB",
+      "label": "AB",
+      "switches": [
+        "A",
+        "B"
+      ]
+    }
+  ],
+  "spikes": [
+    {
+      "x": 780,
       "y": 312,
-      "label": "03",
-      "hint": ""
+      "width": 24,
+      "height": 96,
+      "direction": "right"
+    }
+  ],
+  "repairs": [
+    {
+      "x": 408,
+      "y": 444,
+      "width": 96,
+      "height": 48
     },
     {
-      "x": 804,
-      "y": 84,
-      "label": "04",
-      "hint": ""
-    },
-    {
-      "x": 1020,
-      "y": 540,
-      "label": "05",
-      "hint": ""
+      "x": 912,
+      "y": 480,
+      "width": 96,
+      "height": 48
     }
   ],
   "densityZones": [
@@ -123,7 +126,7 @@
       "width": 528,
       "height": 576,
       "density": 0.85,
-      "label": "저밀도 액체"
+      "label": "저밀도 물"
     },
     {
       "x": 576,
@@ -131,7 +134,8 @@
       "width": 552,
       "height": 576,
       "density": 1.18,
-      "label": "고밀도 액체"
+      "label": "고밀도 물"
     }
-  ]
+  ],
+  "checkpoints": []
 }

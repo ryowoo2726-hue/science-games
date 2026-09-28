@@ -1,20 +1,22 @@
 {
   "id": "dive-07",
-  "name": "뒤집힌 물길",
-  "difficulty": 7,
   "width": 1152,
   "height": 624,
   "cellSize": 12,
   "waterFraction": 0.5,
+  "difficulty": 7,
+  "name": "나선 관측소",
+  "mission": "나선 길 끝의 C 스위치를 누른 다음 안쪽 관측소 입구로 돌아오세요. 360° 회전으로 모서리를 통과하세요.",
+  "accent": "#80bde4",
   "start": {
-    "x": 84,
-    "y": 396
+    "x": 120,
+    "y": 516
   },
   "exit": {
-    "x": 1056,
-    "y": 252,
-    "width": 60,
-    "height": 120
+    "x": 516,
+    "y": 264,
+    "width": 96,
+    "height": 60
   },
   "walls": [
     {
@@ -42,96 +44,92 @@
       "height": 576
     },
     {
-      "x": 144,
-      "y": 24,
-      "width": 24,
-      "height": 468
-    },
-    {
-      "x": 360,
-      "y": 132,
-      "width": 24,
-      "height": 468
-    },
-    {
-      "x": 576,
-      "y": 24,
-      "width": 24,
-      "height": 240
-    },
-    {
-      "x": 576,
-      "y": 372,
-      "width": 24,
-      "height": 228
-    },
-    {
-      "x": 792,
-      "y": 132,
-      "width": 24,
-      "height": 468
-    },
-    {
-      "x": 1008,
-      "y": 24,
-      "width": 24,
-      "height": 468
-    },
-    {
       "x": 168,
-      "y": 276,
-      "width": 36,
+      "y": 108,
+      "width": 816,
+      "height": 24
+    },
+    {
+      "x": 960,
+      "y": 132,
+      "width": 24,
+      "height": 384
+    },
+    {
+      "x": 288,
+      "y": 492,
+      "width": 672,
+      "height": 24
+    },
+    {
+      "x": 264,
+      "y": 228,
+      "width": 24,
+      "height": 264
+    },
+    {
+      "x": 288,
+      "y": 228,
+      "width": 480,
+      "height": 24
+    },
+    {
+      "x": 744,
+      "y": 252,
+      "width": 24,
+      "height": 96
+    },
+    {
+      "x": 384,
+      "y": 348,
+      "width": 384,
       "height": 24
     }
   ],
-  "checkpoints": [
+  "switches": [
     {
-      "x": 156,
-      "y": 546,
-      "label": "01",
-      "hint": ""
-    },
-    {
-      "x": 372,
-      "y": 78,
-      "label": "02",
-      "hint": ""
-    },
-    {
-      "x": 588,
-      "y": 318,
-      "label": "03",
-      "hint": ""
-    },
-    {
-      "x": 804,
-      "y": 78,
-      "label": "04",
-      "hint": ""
-    },
-    {
-      "x": 1020,
-      "y": 546,
-      "label": "05",
-      "hint": ""
+      "id": "C",
+      "label": "C",
+      "x": 840,
+      "y": 420
     }
   ],
-  "densityZones": [
+  "doors": [
     {
-      "x": 24,
-      "y": 24,
-      "width": 528,
-      "height": 576,
-      "density": 0.85,
-      "label": "저밀도 액체"
+      "x": 384,
+      "y": 252,
+      "width": 24,
+      "height": 96,
+      "id": "C",
+      "label": "C",
+      "switches": [
+        "C"
+      ]
+    }
+  ],
+  "spikes": [
+    {
+      "x": 552,
+      "y": 468,
+      "width": 144,
+      "height": 24,
+      "direction": "up"
     },
     {
-      "x": 576,
-      "y": 24,
-      "width": 552,
-      "height": 576,
-      "density": 1.18,
-      "label": "고밀도 액체"
+      "x": 816,
+      "y": 132,
+      "width": 120,
+      "height": 24,
+      "direction": "down"
     }
-  ]
+  ],
+  "repairs": [
+    {
+      "x": 816,
+      "y": 276,
+      "width": 96,
+      "height": 48
+    }
+  ],
+  "checkpoints": []
 }

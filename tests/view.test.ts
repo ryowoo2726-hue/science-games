@@ -121,4 +121,23 @@ describe('in-game controls and fullscreen fallback', () => {
     expect(el('win-title').textContent).toBe('모든 단계 완료!');
     el('next-stage').click(); expect(game.stageIndex).toBe(0); expect(game.status).toBe('playing');
   });
+
+  it('shows each stage mission and a brief in-game event without an extra control panel', () => {
+    game.selectStage(7);
+    expect(el('stage-mission').textContent).toBe(stages[7].mission);
+    el('manual-start').click();
+    expect(el('game-message').hidden).toBe(false);
+    expect(el('game-message').textContent).toContain('A 수문');
+    game.elapsed = game.messageUntil + 1;
+    vi.advanceTimersByTime(100); game.onUpdate();
+    expect(el('game-message').hidden).toBe(true);
+  });
+
+  it('shows a leak countdown on the existing tank gauge and clears it after repair', () => {
+    el('manual-start').click(); game.submarine.hitSpike();
+    vi.advanceTimersByTime(100); game.onUpdate();
+    expect(el('tank-label').textContent).toContain('누수');
+    game.submarine.repair(); vi.advanceTimersByTime(100); game.onUpdate();
+    expect(el('tank-label').textContent).toBe('탱크');
+  });
 });
