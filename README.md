@@ -2,13 +2,15 @@
 
 태블릿을 기울여 중력과 물의 흐름을 바꾸고, 잠수정 내부 탱크의 물을 조절해 탈출하는 한국어 과학 게임입니다. 첫 번째 미로, 터치/키보드 조작, 센서 보정, 실시간 물리 관측, 완료 시간, 재시작을 포함합니다.
 
+**[웹게임 바로 열기](https://ryowoo2726-hue.github.io/buoyancy_game/)**
+
 ## 바로 실행
 
 제공된 프로젝트 ZIP에는 완성된 `dist`가 포함되어 있습니다. Windows에서 **`미리보기.cmd`를 두 번 클릭**하고 표시된 주소(기본 `http://localhost:4173/`)를 브라우저에서 엽니다. 이미 만들어 둔 `dist`를 사용하므로 npm 설치가 필요하지 않습니다. Node.js 22.12 이상이 필요합니다. 종료할 때 실행 창에서 `Ctrl+C`를 누르세요. `dist/index.html`을 직접 더블클릭하는 방식 대신 HTTP 서버로 실행해야 합니다.
 
 GitHub 저장소를 복제한 경우에는 소스만 내려받으므로 먼저 `npm ci`와 `npm run build`로 `dist`를 생성하세요. `node_modules`, `dist`, ZIP은 저장소에 올리지 않습니다.
 
-학교 배포는 아래 GitHub Pages 방법을 사용하면 학생들이 설치 없이 HTTPS 링크로 접속할 수 있습니다. 이 프로젝트는 아직 외부 사이트에 게시하지 않았습니다.
+학생들은 위 HTTPS 링크로 설치 없이 접속할 수 있습니다. GitHub Pages는 빌드된 `dist`를 GitHub Actions로 배포하며, `main`에 푸시하면 자동으로 갱신됩니다.
 
 ## 개발 실행
 
@@ -76,7 +78,7 @@ src/
 tests/                      물리·보존·센서·입력·탈출 검사
 scripts/                    완성본 미리보기 및 로컬 개발 실행
 .github/workflows/ci.yml     푸시·PR 자동 검사와 빌드
-.github/workflows/deploy.yml GitHub Pages 수동 배포
+.github/workflows/deploy.yml GitHub Pages 자동·수동 배포
 dist/                       바로 배포할 완성 빌드
 ```
 
@@ -119,8 +121,8 @@ npm run preview
 ## GitHub Pages 배포
 
 1. 이 프로젝트를 GitHub 저장소의 `main` 브랜치에 올립니다. 푸시 및 PR에서 자동 검사와 빌드가 실행됩니다. `node_modules`는 업로드하지 않습니다.
-2. 저장소 **Settings → Pages → Build and deployment → Source**를 **GitHub Actions**로 선택합니다.
-3. Actions의 ‘Deploy buoyancy maze to GitHub Pages’에서 **Run workflow**를 실행합니다. 설치 → 검사 → 빌드 → `dist` 배포가 실행됩니다. 이후 새 버전을 배포할 때도 이 workflow를 실행합니다.
+2. 저장소 **Settings → Pages → Build and deployment → Source**를 **GitHub Actions**로 선택합니다. `Deploy from a branch`로 원본 `main / (root)`를 배포하면 개발용 HTML의 TypeScript 경로를 불러오지 못해 빈 화면이 됩니다.
+3. `main`에 푸시하면 설치 → 검사 → 빌드 → `dist` 배포가 자동 실행됩니다. 직접 다시 배포하려면 Actions의 ‘Deploy buoyancy maze to GitHub Pages’에서 **Run workflow**를 실행합니다.
 4. Pages에 표시되는 HTTPS 주소를 학생들에게 링크나 QR 코드로 안내합니다.
 
 Vite의 `base: './'` 설정으로 사용자 홈페이지와 저장소 하위 경로 모두에서 자산을 상대 경로로 불러옵니다. 외부 API 키, CDN 스크립트, 백엔드가 필요하지 않습니다. 웹 폰트도 외부에서 받지 않습니다. 다른 정적 HTTPS 호스팅에서도 `dist`의 내용을 그대로 올릴 수 있습니다.
