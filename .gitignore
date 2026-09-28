@@ -1,0 +1,12 @@
+node_modules/
+dist/
+coverage/
+artifacts/
+*.local
+*.zip
+.DS_Store
+_legacy/
+_local-tools/
+중력 골프 게임/
+탄성게임/
+부력게임/

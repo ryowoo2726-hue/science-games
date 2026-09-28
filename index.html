@@ -1,0 +1,284 @@
+﻿<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>마석중학교 과학실 | 1학년 5단원 여러 가지 힘 게임 아케이드</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;500;600;700;800;900&family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --color-cream: #E0D0C1;
+      --color-terracotta: #A76D60;
+      --color-garnet: #601700;
+      --color-garnet-hover: #481100;
+      --color-terracotta-hover: #8e584c;
+      --color-bg: #FAF6F0;
+      --color-card-bg: #FFFFFF;
+      --color-cream-subtle: #F3EAE1;
+      --color-text-main: #241A16;
+      --color-text-muted: #6E5F58;
+      --color-border: #E8DACF;
+      --font-family: "Pretendard", "Noto Sans KR", -apple-system, BlinkMacSystemFont, "Malgun Gothic", sans-serif;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: var(--font-family); background-color: var(--color-bg); color: var(--color-text-main); line-height: 1.6; -webkit-font-smoothing: antialiased; }
+    /* 네비게이션 바 */
+    .navbar { background: #ffffff; border-bottom: 1.5px solid var(--color-border); position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 12px rgba(96, 23, 0, 0.04); }
+    .nav-container { max-width: 1240px; margin: 0 auto; padding: 14px 24px; display: flex; align-items: center; justify-content: space-between; }
+    .nav-brand { display: flex; align-items: center; gap: 12px; text-decoration: none; color: inherit; }
+    .nav-logo-badge { width: 38px; height: 38px; border-radius: 10px; background: var(--color-garnet); color: var(--color-cream); display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 19px; }
+    .nav-title-group { display: flex; flex-direction: column; }
+    .nav-sub { font-size: 11px; font-weight: 700; color: var(--color-terracotta); letter-spacing: 0.5px; }
+    .nav-main-title { font-size: 17px; font-weight: 800; color: var(--color-garnet); line-height: 1.2; }
+    .nav-menu { display: flex; align-items: center; gap: 20px; list-style: none; }
+    .nav-link { text-decoration: none; color: var(--color-text-muted); font-size: 14px; font-weight: 600; transition: color 0.2s; }
+    .nav-link:hover, .nav-link.active { color: var(--color-garnet); font-weight: 700; }
+    .nav-badge-count { background: var(--color-cream); color: var(--color-garnet); padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: 800; margin-left: 4px; }
+     /* 히어로 배너 */
+    .hero-section { background: linear-gradient(135deg, var(--color-garnet) 0%, #762108 55%, var(--color-terracotta) 100%); color: #ffffff; padding: 70px 24px 80px; text-align: center; position: relative; overflow: hidden; }
+    .hero-section::before { content: ""; position: absolute; top: -60px; left: 50%; transform: translateX(-50%); width: 700px; height: 350px; background: radial-gradient(circle, rgba(224, 208, 193, 0.18) 0%, transparent 70%); border-radius: 50%; pointer-events: none; }
+    .hero-badge { display: inline-flex; align-items: center; gap: 8px; background: rgba(224, 208, 193, 0.2); border: 1.5px solid rgba(224, 208, 193, 0.45); color: var(--color-cream); padding: 7px 18px; border-radius: 30px; font-size: 13.5px; font-weight: 700; margin-bottom: 20px; backdrop-filter: blur(6px); }
+    .hero-title { font-size: 42px; font-weight: 900; letter-spacing: -0.8px; margin-bottom: 14px; text-shadow: 0 3px 12px rgba(0, 0, 0, 0.25); }
+    .hero-desc { font-size: 17.5px; color: var(--color-cream); max-width: 660px; margin: 0 auto 32px; font-weight: 400; line-height: 1.65; }
+    .hero-stats-row { display: inline-flex; flex-wrap: wrap; justify-content: center; gap: 24px; background: rgba(0, 0, 0, 0.22); border: 1px solid rgba(255, 255, 255, 0.15); padding: 12px 32px; border-radius: 20px; backdrop-filter: blur(8px); }
+    .hero-stat-item { display: flex; align-items: center; gap: 8px; font-size: 13.5px; color: #fbf5f2; }
+    .hero-stat-item strong { color: var(--color-cream); font-weight: 800; font-size: 16px; }
+    /* 메인 컨테이너 */
+    .main-container { max-width: 1240px; margin: 0 auto; padding: 40px 24px 100px; }
+    /* 툴바 (카테고리 필터 + 검색) */
+    .toolbar-wrapper { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 20px; margin-bottom: 36px; background: #ffffff; padding: 16px 24px; border-radius: 20px; border: 1.5px solid var(--color-border); box-shadow: 0 4px 20px rgba(96, 23, 0, 0.04); }
+    .filter-tabs { display: flex; flex-wrap: wrap; gap: 8px; }
+    .filter-btn { border: 1.5px solid var(--color-border); background: var(--color-bg); color: var(--color-text-muted); padding: 8px 18px; border-radius: 24px; font-size: 13.5px; font-weight: 700; cursor: pointer; transition: all 0.2s ease; font-family: inherit; }
+    .filter-btn:hover { background: var(--color-cream-subtle); color: var(--color-garnet); border-color: var(--color-terracotta); }
+    .filter-btn.active { background: var(--color-garnet); color: #ffffff; border-color: var(--color-garnet); box-shadow: 0 2px 8px rgba(96, 23, 0, 0.25); }
+    .search-box { display: flex; align-items: center; background: var(--color-bg); border: 1.5px solid var(--color-border); border-radius: 24px; padding: 8px 18px; gap: 10px; }
+    .search-box input { border: none; background: transparent; outline: none; font-size: 14px; color: var(--color-text-main); width: 190px; font-family: inherit; }
+    .search-box input::placeholder { color: #a4948d; }
+     /* 게임 카드 그리드 */
+    .game-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 28px; }
+    .game-card { background: var(--color-card-bg); border-radius: 24px; overflow: hidden; border: 1.5px solid var(--color-border); display: flex; flex-direction: column; box-shadow: 0 8px 24px rgba(96, 23, 0, 0.04); position: relative; transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.28s ease, border-color 0.2s; }
+    .game-card:hover { transform: translateY(-8px); box-shadow: 0 18px 40px rgba(96, 23, 0, 0.12); border-color: var(--color-terracotta); }
+    .card-thumb { height: 190px; position: relative; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, var(--color-cream) 0%, var(--color-cream-subtle) 100%); color: var(--color-garnet); overflow: hidden; }
+    .card-thumb-icon { width: 76px; height: 76px; stroke-width: 1.6; transition: transform 0.35s ease; }
+    .game-card:hover .card-thumb-icon { transform: scale(1.12) rotate(4deg); }
+    .status-badge { position: absolute; top: 14px; right: 14px; padding: 5px 12px; border-radius: 12px; font-size: 11.5px; font-weight: 800; letter-spacing: 0.5px; text-transform: uppercase; }
+    .badge-ready { background: var(--color-garnet); color: #ffffff; box-shadow: 0 2px 8px rgba(96, 23, 0, 0.25); }
+    .badge-upcoming { background: rgba(255, 255, 255, 0.95); color: var(--color-terracotta); border: 1.5px solid var(--color-terracotta); }
+    .card-body { padding: 26px; display: flex; flex-direction: column; flex-grow: 1; }
+    .card-category { font-size: 12px; font-weight: 800; color: var(--color-terracotta); text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: 6px; }
+    .card-title { font-size: 22px; font-weight: 900; color: var(--color-garnet); margin-bottom: 10px; line-height: 1.3; }
+    .card-desc { font-size: 14px; color: var(--color-text-muted); line-height: 1.6; margin-bottom: 22px; flex-grow: 1; }
+    .card-meta-list { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; }
+    .meta-tag { background: var(--color-cream-subtle); color: var(--color-text-muted); font-size: 12px; font-weight: 700; padding: 3px 10px; border-radius: 8px; border: 1px solid var(--color-border); }
+    .card-footer { display: flex; align-items: center; justify-content: space-between; border-top: 1.5px solid var(--color-cream-subtle); padding-top: 18px; margin-top: auto; }
+    .card-info { font-size: 12.5px; color: var(--color-text-muted); font-weight: 600; display: flex; align-items: center; gap: 6px; }
+    .btn-play { display: inline-flex; align-items: center; gap: 8px; background: var(--color-garnet); color: #ffffff; padding: 10px 22px; border-radius: 12px; font-size: 14px; font-weight: 800; text-decoration: none; transition: all 0.2s ease; cursor: pointer; border: none; }
+    .btn-play:hover { background: var(--color-terracotta); transform: translateX(3px); }
+    .btn-play.disabled { background: #d5c8be; color: #84756d; cursor: not-allowed; }
+    .btn-play.disabled:hover { transform: none; background: #d5c8be; }
+    /* 게임 추가 자리 (확장성 시각화 카드) */
+    .add-placeholder-card { border: 2.5px dashed var(--color-terracotta); background: rgba(224, 208, 193, 0.28); border-radius: 24px; min-height: 380px; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 34px; text-align: center; color: var(--color-terracotta); transition: all 0.2s ease; }
+    .add-placeholder-card:hover { background: rgba(224, 208, 193, 0.5); border-color: var(--color-garnet); color: var(--color-garnet); transform: translateY(-4px); }
+    /* 푸터 */
+    .footer { background: #ffffff; border-top: 1.5px solid var(--color-border); padding: 40px 24px; text-align: center; color: var(--color-text-muted); font-size: 13.5px; }
+    .footer-brand { font-weight: 800; color: var(--color-garnet); margin-bottom: 6px; }
+    .icon { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; display: inline-block; vertical-align: middle; }
+  </style>
+</head>
+<body>
+   <!-- 상단 네비게이션 -->
+  <nav class="navbar">
+    <div class="nav-container">
+      <a href="#" class="nav-brand">
+        <div class="nav-logo-badge">M</div>
+        <div class="nav-title-group">
+          <span class="nav-sub">마석중학교 과학실</span>
+          <span class="nav-main-title">힘과 운동 인터랙티브 랩</span>
+        </div>
+      </a>
+      <ul class="nav-menu">
+        <li><a href="#games" class="nav-link active">게임 탐구실 <span class="nav-badge-count" id="totalCountBadge">3+</span></a></li>
+        <li><a href="#about" class="nav-link">단원 안내</a></li>
+      </ul>
+    </div>
+  </nav>
+  <!-- 히어로 섹션 -->
+  <header class="hero-section">
+    <div class="hero-badge">
+      <svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="1"/><path d="M20.2 20.2c2.4-2.4 2.4-6.3 0-8.7L12 3.3 3.8 11.5c-2.4 2.4-2.4 6.3 0 8.7 2.4 2.4 6.3 2.4 8.7 0l7.7-7.7"/></svg>
+      <span>중학교 1학년 과학 5단원 • 여러 가지 힘</span>
+    </div>
+    <h1 class="hero-title">사이언스 플레이 그라운드</h1>
+    <p class="hero-desc">교과서 속 공식과 원리를 게임을 통해 직접 조작하고 체험해보세요!<br>원하는 물리 실험 게임을 선택하여 목표를 달성해보세요.</p>
+    <div class="hero-stats-row">
+      <div class="hero-stat-item"><svg class="icon" viewBox="0 0 24 24"><polygon points="6 3 20 12 6 21 6 3"/></svg> <span>실험 게임: <strong>5종 라인업</strong></span></div>
+      <div class="hero-stat-item"><svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="m4.93 4.93 4.24 4.24"/><path d="m14.83 9.17 4.24-4.24"/><path d="m14.83 14.83 4.24 4.24"/><path d="m9.17 14.83-4.24 4.24"/></svg> <span>탐구 개념: <strong>중력 • 탄성력 • 부력 • 마찰력</strong></span></div>
+      <div class="hero-stat-item"><svg class="icon" viewBox="0 0 24 24"><path d="M12 2v20"/><path d="m17 5-5-3-5 3"/><path d="m17 19-5 3-5-3"/></svg> <span>상태: <strong>지속 확장 업데이트</strong></span></div>
+    </div>
+  </header>
+  <!-- 메인 게임 탐구 영역 -->
+  <main class="main-container" id="games">
+    <!-- 필터 및 검색 툴바 (게임이 많아질 때 편리한 탐색) -->
+    <div class="toolbar-wrapper">
+      <div class="filter-tabs">
+        <button class="filter-btn active" data-category="all">전체 보기 (All)</button>
+        <button class="filter-btn" data-category="gravity">중력 (Gravity)</button>
+        <button class="filter-btn" data-category="elastic">탄성력 (Elasticity)</button>
+        <button class="filter-btn" data-category="buoyancy">부력 (Buoyancy)</button>
+        <button class="filter-btn" data-category="friction">마찰력/기타</button>
+      </div>
+      <div class="search-box">
+        <svg class="icon" style="color: var(--color-terracotta);" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+        <input type="text" id="gameSearch" placeholder="게임 이름이나 개념 검색...">
+      </div>
+    </div>
+     <!-- 반응형 게임 그리드 (카드가 무한히 추가되어도 완벽 정렬) -->
+    <div class="game-grid" id="gameGrid">
+      <!-- 1. 중력 골프 게임 -->
+      <article class="game-card" data-cat="gravity" data-title="중력 골프 게임 포물선 행성">
+        <div class="card-thumb">
+          <span class="status-badge badge-ready">Playable</span>
+          <svg class="card-thumb-icon" viewBox="0 0 24 24"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" x2="4" y1="22" y2="15"/></svg>
+        </div>
+        <div class="card-body">
+          <span class="card-category">01. 중력 & 포물선 운동</span>
+          <h2 class="card-title">중력 골프 게임</h2>
+          <p class="card-desc">지구, 달, 목성 등 행성마다 달라지는 중력의 크기! 발사 각도와 세기를 정밀하게 조절하여 홀인원에 도전해보세요.</p>
+          <div class="card-meta-list">
+            <span class="meta-tag">#중력가속도</span>
+            <span class="meta-tag">#포물선운동</span>
+            <span class="meta-tag">#물리시뮬레이션</span>
+          </div>
+          <div class="card-footer">
+            <span class="card-info">난이도 ★★☆</span>
+            <button class="btn-play">게임 시작 <svg class="icon" viewBox="0 0 24 24"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg></button>
+          </div>
+        </div>
+      </article>
+      <!-- 2. 탄성게임 -->
+      <article class="game-card" data-cat="elastic" data-title="탄성력 조준 게임 탄성게임 용수철">
+        <div class="card-thumb" style="background: linear-gradient(135deg, #E2D3C5 0%, #D5BEAC 100%);">
+          <span class="status-badge badge-ready">Playable</span>
+          <svg class="card-thumb-icon" viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+        </div>
+        <div class="card-body">
+          <span class="card-category">02. 탄성력 & 훅의 법칙</span>
+          <h2 class="card-title">탄성력 조준 게임</h2>
+          <p class="card-desc">용수철과 고무줄이 늘어나는 힘의 비밀! 팽팽하게 당겼다 놓으며 물체가 되돌아가려는 탄성 에너지를 직접 체감합니다.</p>
+          <div class="card-meta-list">
+            <span class="meta-tag">#탄성력</span>
+            <span class="meta-tag">#변형과복원</span>
+            <span class="meta-tag">#조준슈팅</span>
+          </div>
+          <div class="card-footer">
+            <span class="card-info">난이도 ★☆☆</span>
+            <button class="btn-play">게임 시작 <svg class="icon" viewBox="0 0 24 24"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg></button>
+          </div>
+        </div>
+      </article>
+      <!-- 3. 부력게임 -->
+      <article class="game-card" data-cat="buoyancy" data-title="부력 미로 탐험 부력게임 유체 밀도">
+        <div class="card-thumb" style="background: linear-gradient(135deg, #D9CBBE 0%, #C7B09C 100%);">
+          <span class="status-badge badge-ready">Playable</span>
+          <svg class="card-thumb-icon" viewBox="0 0 24 24"><path d="M2 6c.6.5 1.2 1 2.5 1C7 7 7 5 9.5 5c2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1"/><path d="M2 12c.6.5 1.2 1 2.5 1 2.5 0 2.5-2 5-2 2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1"/><path d="M2 18c.6.5 1.2 1 2.5 1 2.5 0 2.5-2 5-2 2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1"/></svg>
+        </div>
+        <div class="card-body">
+          <span class="card-category">03. 부력 & 유체역학</span>
+          <h2 class="card-title">부력 미로 탐험</h2>
+          <p class="card-desc">물속에 잠긴 부피와 밀도에 따라 위로 밀어 올리는 부력! 수중 미로를 통과하며 목표 지점에 안전하게 도달하세요.</p>
+          <div class="card-meta-list">
+            <span class="meta-tag">#부력</span>
+            <span class="meta-tag">#밀도비교</span>
+            <span class="meta-tag">#미로탈출</span>
+          </div>
+          <div class="card-footer">
+            <span class="card-info">난이도 ★★★</span>
+            <button class="btn-play">게임 시작 <svg class="icon" viewBox="0 0 24 24"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg></button>
+          </div>
+        </div>
+      </article>
+       <!-- 4. 마찰력 게임 (확장 예시) -->
+      <article class="game-card" data-cat="friction" data-title="마찰력 컬링 배틀 마찰계수 표면">
+        <div class="card-thumb" style="background: #EAE0D6;">
+          <span class="status-badge badge-upcoming">COMING SOON</span>
+          <svg class="card-thumb-icon" style="color: var(--color-terracotta);" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+        </div>
+        <div class="card-body">
+          <span class="card-category">04. 마찰력 & 표면 거칠기</span>
+          <h2 class="card-title">마찰력 컬링 배틀</h2>
+          <p class="card-desc">얼음판, 목재, 사포 등 바닥 재질과 물체의 무게에 따라 달라지는 마찰력의 크기를 조절하여 표적에 안착시키세요.</p>
+          <div class="card-meta-list">
+            <span class="meta-tag">#마찰력</span>
+            <span class="meta-tag">#표면거칠기</span>
+            <span class="meta-tag">#제작중</span>
+          </div>
+          <div class="card-footer">
+            <span class="card-info">난이도 ★★☆</span>
+            <button class="btn-play disabled">출시 준비 중</button>
+          </div>
+        </div>
+      </article>
+      <!-- 5. 자기력 게임 (확장 예시) -->
+      <article class="game-card" data-cat="friction" data-title="자기력 자석 미로 인력 척력">
+        <div class="card-thumb" style="background: #E8DED4;">
+          <span class="status-badge badge-upcoming">COMING SOON</span>
+          <svg class="card-thumb-icon" style="color: var(--color-terracotta);" viewBox="0 0 24 24"><path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l8.57-8.57A4 4 0 1 1 18 8.84l-8.59 8.57a2 2 0 0 1-2.83-2.83l7.9-7.9"/></svg>
+        </div>
+        <div class="card-body">
+          <span class="card-category">05. 자기력 & 자석의 극</span>
+          <h2 class="card-title">자기력 자석 미로</h2>
+          <p class="card-desc">같은 극끼리는 밀어내고(척력), 다른 극끼리는 끌어당기는(인력) 자기장의 성질을 활용한 퍼즐 게임입니다.</p>
+          <div class="card-meta-list">
+            <span class="meta-tag">#자기력</span>
+            <span class="meta-tag">#인력과척력</span>
+            <span class="meta-tag">#아이디어단계</span>
+          </div>
+          <div class="card-footer">
+            <span class="card-info">난이도 ★★☆</span>
+            <button class="btn-play disabled">출시 준비 중</button>
+          </div>
+        </div>
+      </article>
+      <!-- 6. 신규 게임 자동 확장 슬롯 -->
+      <div class="add-placeholder-card">
+        <svg class="icon" style="width: 52px; height: 52px; stroke-width: 1.5; margin-bottom: 14px;" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+        <h3 style="font-size: 19px; font-weight: 800; margin-bottom: 8px;">새로운 게임 등록 공간</h3>
+        <p style="font-size: 13.5px; max-width: 240px; line-height: 1.5;">게임이 계속 추가되어도 그리드 레이아웃이 자동으로 확장되어 깔끔하게 정렬됩니다.</p>
+      </div>
+    </div>
+  </main>
+  <!-- 푸터 -->
+  <footer class="footer">
+    <div class="footer-brand">마석중학교 과학과 인터랙티브 학습 플랫폼</div>
+    <p>중학교 1학년 과학 5단원 [여러 가지 힘] • 교실 수업 및 자기주도 학습용 디지털 콘텐츠</p>
+  </footer>
+  <script>
+    // 카테고리 필터링 및 검색 인터랙션
+    const filterButtons = document.querySelectorAll(".filter-btn");
+    const cards = document.querySelectorAll(".game-card");
+    const searchInput = document.getElementById("gameSearch");
+    let currentCat = "all";
+    function updateFilter() {
+      const query = searchInput.value.toLowerCase().trim();
+      cards.forEach(card => {
+        const cat = card.getAttribute("data-cat");
+        const title = (card.getAttribute("data-title") || "").toLowerCase();
+        const matchCat = (currentCat === "all" || cat === currentCat);
+        const matchQuery = !query || title.includes(query);
+        card.style.display = (matchCat && matchQuery) ? "flex" : "none";
+      });
+    }
+    filterButtons.forEach(btn => {
+      btn.addEventListener("click", () => {
+        filterButtons.forEach(b => b.classList.remove("active"));
+        btn.classList.add("active");
+        currentCat = btn.getAttribute("data-category");
+        updateFilter();
+      });
+    });
+    if (searchInput) searchInput.addEventListener("input", updateFilter);
+  </script>
+</body>
+</html>
