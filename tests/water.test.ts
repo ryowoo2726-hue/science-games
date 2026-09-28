@@ -43,6 +43,37 @@ describe('conservative connected water', () => {
     expect(water.totalMass()).toBeCloseTo(water.openCells * .5, 8);
   });
 
+  it.each([-90, 90])('responds to a %s degree tilt within one second, without an instant jump', angle => {
+    const water = new Water(tank());
+    const initial = centre(water).x;
+    const original = water.mass.slice();
+    water.step(gravityAt(angle));
+    expect(Math.abs(centre(water).x - initial)).toBeLessThan(.5);
+    expect(water.previousMass).toEqual(original);
+    for (let n = 1; n < 60; n++) water.step(gravityAt(angle));
+    if (angle > 0) expect(centre(water).x).toBeGreaterThan(13);
+    else expect(centre(water).x).toBeLessThan(6);
+    expect(water.totalMass()).toBeCloseTo(water.openCells * .5, 8);
+  });
+
+  it('moves the actual maze water promptly while interpolation preserves volume and walls', () => {
+    const water = new Water(stageData);
+    const initial = centre(water).x;
+    for (let n = 0; n < 180; n++) water.step(gravityAt(60));
+    expect(centre(water).x).toBeGreaterThan(initial + 6);
+    for (const blend of [0, .25, .5, .75, 1]) {
+      let volume = 0;
+      water.mass.forEach((m, i) => {
+        const interpolated = water.previousMass[i] + (m - water.previousMass[i]) * blend;
+        volume += interpolated;
+        if (water.solid[i]) expect(interpolated).toBe(0);
+      });
+      expect(volume).toBeCloseTo(water.openCells * .5, 7);
+    }
+    water.reset();
+    expect(water.previousMass).toEqual(water.mass);
+  });
+
   it('conserves total mass and keeps solid cells dry during abrupt tilts', () => {
     const water = new Water(stageData);
     const original = water.totalMass();
@@ -77,7 +108,7 @@ describe('conservative connected water', () => {
   it('has a free surface perpendicular to diagonal gravity', () => {
     const water = new Water(tank());
     const g = gravityAt(35);
-    for (let n = 0; n < 20000; n++) water.step(g);
+    for (let n = 0; n < 1200; n++) water.step(g);
     const heads: number[] = [];
     water.mass.forEach((m, i) => {
       if (!water.solid[i] && m > .1 && m < .9) {

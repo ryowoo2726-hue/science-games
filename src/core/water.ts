@@ -3,23 +3,16 @@ import { clamp, type Stage, type Vector } from '../types';
 // A conservative, slightly compressible finite-volume cellular liquid.
 // Only an open face between two orthogonally adjacent cells can transfer mass.
 export const COMPRESSIBILITY = 0.002;
-const RELAXATION = 0.42;
-const MAX_TRANSFER = 0.24;
+// Solve pressure across the wet cells before transferring water. A local
+// two-cell relaxation transmits pressure too slowly through a long flooded hall.
+const FLOW_RATE = 0.16;
+const PRESSURE_SWEEPS = 24;
+const MAX_TRANSFER = 0.3;
+const DRY = 1e-10;
 
 export function massAtPressure(pressure: number): number {
   if (pressure <= 0) return 0;
   return pressure <= 1 ? pressure : 1 + COMPRESSIBILITY * (pressure - 1);
-}
-
-// Exact two-cell hydrostatic equilibrium: p(b) - p(a) = gravity projection.
-export function lowerEquilibrium(total: number, gravity: number): number {
-  const k = clamp(gravity, 0, 1);
-  if (total <= k) return total;
-  if (total <= 2 - k) return (total + k) / 2;
-  if (total < 2 + COMPRESSIBILITY * k) {
-    return total - (total - 1 + COMPRESSIBILITY * (1 - k)) / (1 + COMPRESSIBILITY);
-  }
-  return (total + COMPRESSIBILITY * k) / 2;
 }
 
 export class Water {
@@ -28,10 +21,21 @@ export class Water {
   readonly size: number;
   readonly solid: Uint8Array;
   readonly mass: Float64Array;
+  readonly previousMass: Float64Array;
   readonly horizontal: Int32Array;
   readonly vertical: Int32Array;
   readonly openCells: number;
+  revision = 0;
   private tick = 0;
+  private faces: Int32Array;
+  private neighbors: Int32Array;
+  private pressure: Float64Array;
+  private source: Float64Array;
+  private outgoing: Float64Array;
+  private flux: Float64Array;
+  private faceGravity: Float64Array;
+  private active: Uint8Array;
+  private degree: Uint8Array;
 
   constructor(readonly stage: Stage) {
     this.size = stage.cellSize;
@@ -42,6 +46,7 @@ export class Water {
     }
     this.solid = new Uint8Array(this.cols * this.rows);
     this.mass = new Float64Array(this.solid.length);
+    this.previousMass = new Float64Array(this.solid.length);
     for (const wall of stage.walls) {
       if ([wall.x, wall.y, wall.width, wall.height].some(v => v % this.size !== 0)) {
         throw new Error('벽 좌표와 크기는 cellSize의 배수여야 합니다.');
@@ -67,6 +72,22 @@ export class Water {
     this.openCells = open;
     this.horizontal = Int32Array.from(horizontal);
     this.vertical = Int32Array.from(vertical);
+    this.faces = Int32Array.from([...horizontal, ...vertical]);
+    const faceCount = this.faces.length / 2;
+    this.neighbors = new Int32Array(this.mass.length * 4).fill(-1);
+    this.pressure = new Float64Array(this.mass.length);
+    this.source = new Float64Array(this.mass.length);
+    this.outgoing = new Float64Array(this.mass.length);
+    this.degree = new Uint8Array(this.mass.length);
+    this.flux = new Float64Array(faceCount);
+    this.faceGravity = new Float64Array(faceCount);
+    this.active = new Uint8Array(faceCount);
+    const count = new Uint8Array(this.mass.length);
+    for (let f = 0; f < faceCount; f++) {
+      const a = this.faces[f * 2], b = this.faces[f * 2 + 1];
+      this.neighbors[a * 4 + count[a]++] = f;
+      this.neighbors[b * 4 + count[b]++] = f;
+    }
     this.reset();
   }
 
@@ -90,38 +111,73 @@ export class Water {
     for (let i = 0; i < this.mass.length; i++) {
       if (!this.solid[i]) this.mass[i] = massAtPressure(level + Math.floor(i / this.cols));
     }
+    this.previousMass.set(this.mass);
+    this.revision++;
   }
 
   step(gravity: Vector): void {
-    // Alternating sweeps remove a persistent left/right traversal bias.
-    // Bounded face flow takes time to propagate even after an abrupt tilt.
-    for (let sweep = 0; sweep < 3; sweep++) {
+    const { mass, pressure, source, faces, active, degree, faceGravity, flux, outgoing } = this;
+    this.previousMass.set(mass);
+    source.set(mass);
+    degree.fill(0);
+    for (let i = 0; i < mass.length; i++) {
+      pressure[i] = mass[i] <= 1 ? mass[i] : 1 + (mass[i] - 1) / COMPRESSIBILITY;
+    }
+    for (let f = 0; f < active.length; f++) {
+      const a = faces[f * 2], b = faces[f * 2 + 1];
+      const g = f * 2 < this.horizontal.length ? gravity.x : gravity.y;
+      faceGravity[f] = g;
+      const drive = pressure[a] - pressure[b] + g;
+      // Air cannot supply water, nor transmit pressure across a dry corridor.
+      active[f] = (mass[a] > DRY || mass[b] > DRY)
+        && !(mass[a] <= DRY && drive >= 0 || mass[b] <= DRY && drive <= 0) ? 1 : 0;
+      if (!active[f]) continue;
+      degree[a]++; degree[b]++;
+      source[a] -= FLOW_RATE * g;
+      source[b] += FLOW_RATE * g;
+    }
+    // Implicit finite-volume pressure solve, warm-started from the current water.
+    // Alternating traversals avoid a persistent left/right flow bias.
+    for (let sweep = 0; sweep < PRESSURE_SWEEPS; sweep++) {
       const reverse = (this.tick + sweep) % 2 !== 0;
-      if ((this.tick + sweep) % 2 === 0) {
-        this.exchange(this.vertical, gravity.y, reverse);
-        this.exchange(this.horizontal, gravity.x, reverse);
-      } else {
-        this.exchange(this.horizontal, gravity.x, reverse);
-        this.exchange(this.vertical, gravity.y, reverse);
+      for (let n = 0; n < mass.length; n++) {
+        const i = reverse ? mass.length - 1 - n : n;
+        if (!degree[i]) continue;
+        let rhs = source[i];
+        for (let d = 0; d < 4; d++) {
+          const f = this.neighbors[i * 4 + d];
+          if (f < 0 || !active[f]) continue;
+          const a = faces[f * 2], b = faces[f * 2 + 1];
+          rhs += FLOW_RATE * pressure[i === a ? b : a];
+        }
+        const diagonal = FLOW_RATE * degree[i];
+        const target = rhs < 0 ? rhs / diagonal
+          : rhs <= 1 + diagonal ? rhs / (1 + diagonal)
+          : (rhs - 1 + COMPRESSIBILITY) / (diagonal + COMPRESSIBILITY);
+        pressure[i] += 1.5 * (target - pressure[i]);
       }
     }
-    this.tick++;
-  }
-
-  private exchange(edges: Int32Array, projection: number, reverse: boolean): void {
-    for (let n = 0; n < edges.length; n += 2) {
-      const index = reverse ? edges.length - 2 - n : n;
-      let a = edges[index];
-      let b = edges[index + 1];
-      if (projection < 0) [a, b] = [b, a];
-      const total = this.mass[a] + this.mass[b];
-      if (total <= 0) continue;
-      const targetB = lowerEquilibrium(total, Math.abs(projection));
-      const desired = (targetB - this.mass[b]) * RELAXATION;
-      const transfer = clamp(desired, -Math.min(MAX_TRANSFER, this.mass[b]), Math.min(MAX_TRANSFER, this.mass[a]));
-      this.mass[a] -= transfer;
-      this.mass[b] += transfer;
+    outgoing.fill(0);
+    for (let f = 0; f < active.length; f++) {
+      if (!active[f]) { flux[f] = 0; continue; }
+      const a = faces[f * 2], b = faces[f * 2 + 1];
+      const flow = clamp(FLOW_RATE * (pressure[a] - pressure[b] + faceGravity[f]), -MAX_TRANSFER, MAX_TRANSFER);
+      flux[f] = flow;
+      outgoing[flow > 0 ? a : b] += Math.abs(flow);
     }
+    // Limit all outgoing faces together before mutating any mass. This prevents
+    // negatives and makes each transfer independent of traversal order.
+    for (let f = 0; f < active.length; f++) {
+      const a = faces[f * 2], b = faces[f * 2 + 1];
+      const from = flux[f] > 0 ? a : b;
+      if (outgoing[from] > 0 && outgoing[from] >= mass[from]) flux[f] *= mass[from] / (outgoing[from] + 1e-12);
+    }
+    for (let f = 0; f < active.length; f++) {
+      mass[faces[f * 2]] -= flux[f];
+      mass[faces[f * 2 + 1]] += flux[f];
+    }
+    this.tick++;
+    this.revision++;
   }
 
   totalMass(): number {

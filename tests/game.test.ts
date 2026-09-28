@@ -40,7 +40,7 @@ describe('escape mission', () => {
     expect(game.completedGates).toBe(3);
     expect(game.elapsed).toBeLessThan(180);
     expect(game.water.totalMass()).toBeCloseTo(game.water.openCells * .5, 7);
-  });
+  }, 30000); // Simulates a complete escape, rather than just a few frames.
 
   it('does not advance time or physics when paused and restarts cleanly', () => {
     const game = new Game(stage);

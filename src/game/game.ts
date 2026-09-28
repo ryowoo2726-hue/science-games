@@ -13,11 +13,9 @@ export class Game {
   status: GameStatus = 'ready';
   elapsed = 0;
   completedGates = 0;
-  showForces = true;
   tankDirection = 0;
   keyboardTilt = 0;
   private accumulator = 0;
-  private waterTick = 0;
   private lastFrame = 0;
   private raf = 0;
   onStatusChange: () => void = () => {};
@@ -42,7 +40,6 @@ export class Game {
     this.tilt.calibrate();
     this.elapsed = 0;
     this.completedGates = 0;
-    this.waterTick = 0;
     this.accumulator = 0;
     this.tankDirection = 0;
     this.keyboardTilt = 0;
@@ -66,8 +63,8 @@ export class Game {
     if (this.tilt.mode === 'manual' && this.keyboardTilt) this.tilt.setManual(this.tilt.target + this.keyboardTilt * 65 * FIXED_STEP);
     this.tilt.update(FIXED_STEP);
     const gravity = gravityAt(this.tilt.angle);
-    // 60 Hz rigid bodies, 30 Hz cellular fluid. All use fixed world coordinates.
-    if (this.waterTick++ % 2 === 0) this.water.step(gravity);
+    // Both fluid and rigid bodies run at 60 Hz in fixed world coordinates.
+    this.water.step(gravity);
     this.submarine.step(this.water, gravity, this.tankDirection);
     this.elapsed += FIXED_STEP;
     const pos = this.submarine.body.position;
@@ -80,6 +77,10 @@ export class Game {
       this.keyboardTilt = 0;
       this.onStatusChange();
     }
+  }
+
+  get renderBlend(): number {
+    return this.status === 'playing' ? Math.min(this.accumulator / FIXED_STEP, 1) : 1;
   }
 
   run(): void {
