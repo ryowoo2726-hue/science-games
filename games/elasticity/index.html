@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>탄성 퀘스트 : 20단계 물리 퍼즐</title>
+  <link rel="stylesheet" href="style.css">
+  <!-- 구글 폰트 (가독성 높은 폰트) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Jua&family=Noto+Sans+KR:wght@500;700;900&family=Outfit:wght@600;800&display=swap" rel="stylesheet">
+</head>
+<body>
+  <!-- 메인 게임 래퍼 -->
+  <div id="game-app">
+    <!-- 상단 대시보드 (HUD) -->
+    <header id="hud-top">
+      <div class="hud-left">
+        <button id="btn-stage-select" class="tablet-btn icon-btn" title="단계 선택" aria-label="스테이지 목록 열기">
+          <span class="btn-icon">☰</span>
+          <span class="btn-text">단계 목록</span>
+        </button>
+        <div class="stage-info-pill">
+          <span class="stage-badge" id="current-stage-badge">STAGE 1</span>
+          <span class="stage-title" id="current-stage-title">탄성의 발견</span>
+        </div>
+      </div>
+
+      <!-- 과학 공식 및 탄성력 실시간 미터 -->
+      <div class="hud-center">
+        <div class="hooke-formula-card">
+          <div class="formula-label">훅의 법칙 (Hooke's Law)</div>
+          <div class="formula-math">
+            <span class="var-f">F</span> = <span class="var-k" id="meter-k-val">k(1.0)</span> × <span class="var-x" id="meter-x-val">x(0cm)</span>
+            <span class="force-result">= <strong id="meter-force-total">0.0</strong> N</span>
+          </div>
+          <div class="gauge-bar-wrapper">
+            <div class="gauge-bar-fill" id="gauge-fill"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="hud-right">
+        <div class="ball-count-pill" title="남은 발사 기회" aria-label="남은 발사 기회">
+          <span class="ball-icon">⚪</span>
+          <span id="balls-left-count" aria-live="polite">3</span>
+        </div>
+        <button id="btn-restart" class="tablet-btn icon-btn retry-btn" title="다시 시도">
+          <span class="btn-icon">↺</span>
+          <span class="btn-text">다시</span>
+        </button>
+        <button id="btn-sound" class="tablet-btn icon-btn sound-btn" title="소리 켜기/끄기" aria-label="소리 켜기 또는 끄기" aria-pressed="true">
+          <span class="btn-icon" id="sound-icon">🔊</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- 캔버스 컨테이너 (태블릿 화면비율 유지) -->
+    <main id="canvas-container">
+      <canvas id="gameCanvas" width="1280" height="720" tabindex="0" aria-label="탄성력 게임판. 공을 누르고 발사 반대 방향으로 당긴 뒤 놓으세요."></canvas>
+      
+      <!-- 인터랙션 힌트 안내 오버레이 (첫 조작 안내) -->
+      <div id="drag-guide-hint" class="floating-hint">
+        <div class="hand-pulse">👆</div>
+        <span>공을 뒤로 당겼다 놓아보세요!</span>
+      </div>
+    </main>
+
+    <!-- 하단 용수철 재료 선택 패널 (태블릿 터치에 맞춘 큼직한 버튼) -->
+    <footer id="hud-bottom">
+      <div class="material-panel-title">
+        <span class="title-accent">용수철 재료 선택</span>
+        <span class="title-sub">(재료에 따라 탄성계수 k값이 달라집니다!)</span>
+      </div>
+
+      <div class="material-buttons-grid">
+        <!-- 1. 고무 용수철 -->
+        <button class="material-card active" data-material="rubber" id="mat-rubber" aria-pressed="true">
+          <div class="mat-indicator rubber-color"></div>
+          <div class="mat-info">
+            <div class="mat-name">부드러운 고무</div>
+            <div class="mat-k">탄성계수 k = 1.0</div>
+          </div>
+          <div class="mat-tag">약한 힘 / 정밀 조절</div>
+        </button>
+
+        <!-- 2. 강철 용수철 -->
+        <button class="material-card" data-material="steel" id="mat-steel" aria-pressed="false">
+          <div class="mat-indicator steel-color"></div>
+          <div class="mat-info">
+            <div class="mat-name">표준 강철</div>
+            <div class="mat-k">탄성계수 k = 1.8</div>
+          </div>
+          <div class="mat-tag">균형 잡힌 표준</div>
+        </button>
+
+        <!-- 3. 고탄성 합금 용수철 -->
+        <button class="material-card" data-material="titanium" id="mat-titanium" aria-pressed="false">
+          <div class="mat-indicator titanium-color"></div>
+          <div class="mat-info">
+            <div class="mat-name">슈퍼 티타늄 합금</div>
+            <div class="mat-k">탄성계수 k = 2.8</div>
+          </div>
+          <div class="mat-tag">강력한 추진력</div>
+        </button>
+      </div>
+    </footer>
+  </div>
+
+  <!-- 스테이지 클리어 축하 모달 -->
+  <div id="clear-modal" class="modal-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="modal-clear-title">
+    <div class="modal-box clear-box">
+      <div class="clear-star-banner">🎉 STAGE CLEAR! 🎉</div>
+      <h2 id="modal-clear-title">스테이지 1 클리어!</h2>
+      
+      <!-- 과학 개념 학습 피드백 카드 -->
+      <div class="science-concept-card">
+        <div class="science-tag">💡 탄성 과학 탐구</div>
+        <p id="modal-science-tip">
+          용수철을 더 많이 당길수록(변형 길이 x가 클수록) 되돌아가려는 탄성력(F)이 커집니다!
+        </p>
+      </div>
+
+      <div class="modal-stats">
+        <div class="stat-item">
+          <span class="stat-label">사용한 공</span>
+          <span class="stat-value" id="modal-shots-used">1개</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-label">최대 탄성력</span>
+          <span class="stat-value" id="modal-max-force">18.5 N</span>
+        </div>
+      </div>
+
+      <div class="modal-actions">
+        <button id="btn-modal-retry" class="tablet-btn modal-secondary-btn">다시 하기</button>
+        <button id="btn-modal-next" class="tablet-btn modal-primary-btn">다음 단계로! ➔</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 게임 오버 (실패) 모달 -->
+  <div id="fail-modal" class="modal-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="fail-modal-title">
+    <div class="modal-box fail-box">
+      <div class="fail-banner">💥 공을 모두 사용했어요!</div>
+      <h2 id="fail-modal-title">다시 도전해볼까요?</h2>
+      <p class="fail-hint" id="fail-hint-text">용수철 재료를 바꾸거나 당기는 힘과 각도를 조절해보세요.</p>
+      <div class="modal-actions">
+        <button id="btn-modal-fail-retry" class="tablet-btn modal-primary-btn">↺ 다시 도전</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 전체 20단계 선택 맵 모달 -->
+  <div id="stage-select-modal" class="modal-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="stage-select-title">
+    <div class="modal-box stage-map-box">
+      <div class="modal-header-row">
+        <h2 id="stage-select-title">🧭 스테이지 선택</h2>
+        <button id="btn-close-stage-select" class="close-btn" aria-label="스테이지 목록 닫기">✕</button>
+      </div>
+      <div class="stages-grid" id="stages-grid-container">
+        <!-- 1~20단계 카드가 자바스크립트로 동적 생성됨 -->
+      </div>
+    </div>
+  </div>
+
+  <script src="game.js"></script>
+</body>
+</html>
