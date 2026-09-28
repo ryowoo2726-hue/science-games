@@ -6,7 +6,8 @@
   <title>마석중학교 과학실 | 1학년 5단원 여러 가지 힘 게임 아케이드</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;500;600;700;800;900&family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
   <style>
     :root {
       --color-cream: #E0D0C1;
@@ -85,6 +86,23 @@
     .footer { background: #ffffff; border-top: 1.5px solid var(--color-border); padding: 40px 24px; text-align: center; color: var(--color-text-muted); font-size: 13.5px; }
     .footer-brand { font-weight: 800; color: var(--color-garnet); margin-bottom: 6px; }
     .icon { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; display: inline-block; vertical-align: middle; }
+    html { scroll-behavior: smooth; scroll-padding-top: 90px; }
+    .btn-play:focus-visible, .filter-btn:focus-visible, .nav-link:focus-visible { outline: 3px solid var(--color-terracotta); outline-offset: 4px; }
+    @media (max-width: 600px) {
+      .nav-container { flex-wrap: wrap; gap: 14px; padding: 14px 18px; }
+      .nav-main-title { font-size: 15px; }
+      .nav-menu { gap: 16px; }
+      .hero-section { padding: 48px 18px 54px; }
+      .hero-title { font-size: 30px; }
+      .hero-desc { font-size: 15px; }
+      .hero-stats-row { gap: 12px; padding: 14px 18px; }
+      .main-container { padding: 28px 16px 60px; }
+      .toolbar-wrapper { padding: 16px; gap: 16px; }
+      .filter-btn { padding: 8px 12px; }
+      .search-box { width: 100%; }
+      .search-box input { width: 100%; min-width: 0; }
+      .game-grid { grid-template-columns: minmax(0, 1fr); gap: 20px; }
+    }
   </style>
 </head>
 <body>
@@ -99,7 +117,7 @@
         </div>
       </a>
       <ul class="nav-menu">
-        <li><a href="#games" class="nav-link active">게임 탐구실 <span class="nav-badge-count" id="totalCountBadge">3+</span></a></li>
+        <li><a href="#games" class="nav-link active">게임 탐구실 <span class="nav-badge-count" id="totalCountBadge">3</span></a></li>
         <li><a href="#about" class="nav-link">단원 안내</a></li>
       </ul>
     </div>
@@ -153,7 +171,7 @@
           </div>
           <div class="card-footer">
             <span class="card-info">난이도 ★★☆</span>
-            <button class="btn-play">게임 시작 <svg class="icon" viewBox="0 0 24 24"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg></button>
+            <a class="btn-play" href="./games/gravity/" aria-label="중력 골프 게임 시작">게임 시작 <svg class="icon" viewBox="0 0 24 24"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg></a>
           </div>
         </div>
       </article>
@@ -174,7 +192,7 @@
           </div>
           <div class="card-footer">
             <span class="card-info">난이도 ★☆☆</span>
-            <button class="btn-play">게임 시작 <svg class="icon" viewBox="0 0 24 24"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg></button>
+            <a class="btn-play" href="./games/elasticity/" aria-label="탄성력 조준 게임 시작">게임 시작 <svg class="icon" viewBox="0 0 24 24"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg></a>
           </div>
         </div>
       </article>
@@ -195,7 +213,7 @@
           </div>
           <div class="card-footer">
             <span class="card-info">난이도 ★★★</span>
-            <button class="btn-play">게임 시작 <svg class="icon" viewBox="0 0 24 24"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg></button>
+            <a class="btn-play" href="./games/buoyancy/" aria-label="부력 미로 탐험 게임 시작">게임 시작 <svg class="icon" viewBox="0 0 24 24"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg></a>
           </div>
         </div>
       </article>
@@ -216,7 +234,7 @@
           </div>
           <div class="card-footer">
             <span class="card-info">난이도 ★★☆</span>
-            <button class="btn-play disabled">출시 준비 중</button>
+            <button class="btn-play disabled" type="button" disabled>출시 준비 중</button>
           </div>
         </div>
       </article>
@@ -237,7 +255,7 @@
           </div>
           <div class="card-footer">
             <span class="card-info">난이도 ★★☆</span>
-            <button class="btn-play disabled">출시 준비 중</button>
+            <button class="btn-play disabled" type="button" disabled>출시 준비 중</button>
           </div>
         </div>
       </article>
@@ -250,7 +268,7 @@
     </div>
   </main>
   <!-- 푸터 -->
-  <footer class="footer">
+  <footer class="footer" id="about">
     <div class="footer-brand">마석중학교 과학과 인터랙티브 학습 플랫폼</div>
     <p>중학교 1학년 과학 5단원 [여러 가지 힘] • 교실 수업 및 자기주도 학습용 디지털 콘텐츠</p>
   </footer>

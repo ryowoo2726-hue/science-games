@@ -24,6 +24,8 @@
   --accent-gold: #fbbf24;
 }
 
+.home-link { text-decoration: none; }
+
 * {
   box-sizing: border-box;
   margin: 0;

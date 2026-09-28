@@ -5,6 +5,7 @@ import type { Renderer } from '../render/renderer';
 import { wrapAngle } from '../types';
 
 const icons: Record<string, string> = {
+  home: '<path d="m3 10 9-7 9 7v10H3Z"/><path d="M9 20v-7h6v7"/>',
   reset: '<path d="M3 11a9 9 0 1 1 2.3 7M3 4v7h7"/>',
   target: '<circle cx="12" cy="12" r="7"/><circle cx="12" cy="12" r="2"/><path d="M12 2v3m0 14v3M2 12h3m14 0h3"/>',
   play: '<path d="m9 5 11 7-11 7Z"/>',
@@ -32,6 +33,7 @@ export function createView(): HTMLCanvasElement {
       <header class="hud">
         <div class="hud-readouts"><select id="stage-select" aria-label="단계 선택"></select><time id="timer">00:00</time><span class="readout">기울기 <b id="hud-angle">0°</b></span><span class="readout density-readout">잠수정 <b id="hud-density">1.00</b></span><span class="readout">물 <b id="water-density">1.00</b></span></div>
         <nav class="hud-actions" aria-label="게임 설정">
+          <a href="../../" class="icon-button home-link" aria-label="메인 홈페이지로 돌아가기" title="메인으로">${icon('home')}</a>
           <button id="switch-mode" class="compact-button">센서 사용</button>
           <button id="calibrate" class="icon-button" aria-label="현재 자세를 0도로 보정" title="0° 보정">${icon('target')}</button>
           <button id="pause" class="icon-button" aria-label="일시 정지" title="일시 정지" disabled>${icon('pause')}</button>

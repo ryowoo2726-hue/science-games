@@ -1,0 +1,12 @@
+{
+  "name": "science-games",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "node scripts/start-local.mjs",
+    "build": "node scripts/build.mjs",
+    "preview": "node scripts/preview.mjs",
+    "test": "npm --prefix games/buoyancy test"
+  },
+  "engines": { "node": ">=22.12.0" }
+}

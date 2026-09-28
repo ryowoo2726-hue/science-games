@@ -10,6 +10,7 @@
 html, body, #app { width: 100%; height: 100%; margin: 0; overflow: hidden; }
 body { overscroll-behavior: none; touch-action: manipulation; }
 button, input { font: inherit; }
+.home-link { color: inherit; text-decoration: none; touch-action: manipulation; }
 select { font: inherit; color: inherit; }
 #stage-select { max-width: 160px; width: 150px; min-height: 30px; padding: 0 3px; border: 0; background: #12374a; border-radius: 6px; pointer-events: auto; font-size: 12px; }
 button { cursor: pointer; color: inherit; border: 0; touch-action: manipulation; user-select: none; -webkit-user-select: none; }
