@@ -10,6 +10,7 @@ try {
   const renderer = new Renderer(canvas, game);
   bindView(game, renderer);
   game.render = () => renderer.draw();
+  game.onFrameCost = milliseconds => renderer.recordFrameCost(milliseconds);
   game.run();
 } catch (error) {
   console.error(error);

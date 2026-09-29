@@ -22,13 +22,25 @@ export class Game {
   readonly doorOpenedAt = new Map<string, number>();
   message = '';
   messageUntil = 0;
+  renderInterval = 1000 / 60;
   private accumulator = 0;
-  private lastFrame = 0;
+  private lastFrame: number | null = null;
+  private lastRender = -Infinity;
+  private renderPending = true;
+  private lastDrawnStatus: GameStatus | null = null;
   private raf = 0;
+  private running = false;
   onStatusChange: () => void = () => {};
   onUpdate: () => void = () => {};
   onStageChange: () => void = () => {};
   render: () => void = () => {};
+  onFrameCost: (milliseconds: number) => void = () => {};
+
+  private readonly visibilityChanged = () => {
+    this.lastFrame = null;
+    this.accumulator = 0;
+    if (document.hidden && this.status === 'playing') this.togglePause();
+  };
 
   constructor(public stage: Stage, readonly stages: Stage[] = [stage]) {
     this.water = new Water(stage);
@@ -55,7 +67,8 @@ export class Game {
   start(): void {
     this.status = 'playing';
     this.accumulator = 0;
-    this.lastFrame = 0;
+    this.lastFrame = null;
+    this.renderPending = true;
     if (!this.elapsed) this.notify(this.stage.mission ?? '탱크의 물을 조절하고 기울여 출구로 이동하세요.', 7);
     this.onStatusChange();
   }
@@ -67,6 +80,8 @@ export class Game {
     this.elapsed = 0;
     this.completedGates = 0;
     this.accumulator = 0;
+    this.lastFrame = null;
+    this.renderPending = true;
     this.tankDirection = 0;
     this.keyboardTilt = 0;
     this.pressedSwitches.clear();
@@ -85,7 +100,8 @@ export class Game {
     this.tankDirection = 0;
     this.keyboardTilt = 0;
     this.accumulator = 0;
-    this.lastFrame = 0;
+    this.lastFrame = null;
+    this.renderPending = true;
     this.onStatusChange();
   }
 
@@ -143,31 +159,45 @@ export class Game {
   }
 
   run(): void {
+    if (this.running) return;
+    this.running = true;
     const frame = (time: number) => {
-      const delta = this.lastFrame ? Math.min((time - this.lastFrame) / 1000, .1) : 0;
+      if (!this.running) return;
+      const started = performance.now();
+      const delta = this.lastFrame === null ? 0 : Math.max(0, Math.min((time - this.lastFrame) / 1000, .1));
       this.lastFrame = time;
       if (this.status === 'playing') {
         this.accumulator += delta;
         let steps = 0;
-        while (this.accumulator >= FIXED_STEP && steps < 6) {
+        // Never turn one slow frame into a burst of six expensive fluid steps.
+        // Keep the 60 Hz physics rule and discard time we cannot catch up with.
+        while (this.accumulator >= FIXED_STEP && steps < 2 && this.status === 'playing') {
           this.step();
           this.accumulator -= FIXED_STEP;
           steps++;
         }
+        if (this.accumulator >= FIXED_STEP) this.accumulator %= FIXED_STEP;
       } else this.accumulator = 0;
-      this.render();
-      this.onUpdate();
+      const changed = this.renderPending || this.lastDrawnStatus !== this.status;
+      if (changed || this.status === 'playing' && time - this.lastRender >= this.renderInterval - 1) {
+        this.renderPending = false;
+        this.lastDrawnStatus = this.status;
+        this.lastRender = time;
+        this.render();
+        this.onUpdate();
+        if (this.status === 'playing') this.onFrameCost(performance.now() - started);
+      }
       this.raf = requestAnimationFrame(frame);
     };
     this.raf = requestAnimationFrame(frame);
-    document.addEventListener('visibilitychange', () => {
-      this.lastFrame = 0;
-      this.accumulator = 0;
-      if (document.hidden && this.status === 'playing') this.togglePause();
-    });
+    document.addEventListener('visibilitychange', this.visibilityChanged);
   }
 
-  dispose(): void { cancelAnimationFrame(this.raf); }
+  dispose(): void {
+    this.running = false;
+    cancelAnimationFrame(this.raf);
+    document.removeEventListener('visibilitychange', this.visibilityChanged);
+  }
 }
 
 export function formatTime(seconds: number): string {

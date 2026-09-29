@@ -2,6 +2,7 @@ import type { Game } from '../game/game';
 import { traceSurface } from './surface';
 import { gravityAt, type Vector } from '../types';
 import { spikeTriangles } from '../core/mechanics';
+import { canvasPixelRatio, FrameQuality } from './performance';
 
 const TAU = Math.PI * 2;
 const font = '"Segoe UI", "Malgun Gothic", sans-serif';
@@ -12,11 +13,15 @@ export class Renderer {
   private waterContext: CanvasRenderingContext2D;
   private materialCanvas = document.createElement('canvas');
   private materialContext: CanvasRenderingContext2D;
+  private backgroundCanvas = document.createElement('canvas');
+  private sceneryCanvas = document.createElement('canvas');
+  private quality = new FrameQuality(window.matchMedia('(pointer: coarse)').matches);
   private openArea = new Path2D();
   private materialImage!: ImageData;
   private waterStamp = -1;
   private lastBlend = -1;
   private geometryStamp = -1;
+  private lastWaterPaint = -Infinity;
   private width = 0;
   private height = 0;
   private pixelRatio = 1;
@@ -41,19 +46,41 @@ export class Renderer {
     const rect = this.canvas.getBoundingClientRect();
     this.width = rect.width;
     this.height = rect.height;
-    this.pixelRatio = Math.min(window.devicePixelRatio || 1, 2);
-    this.canvas.width = Math.round(this.width * this.pixelRatio);
-    this.canvas.height = Math.round(this.height * this.pixelRatio);
+    this.pixelRatio = canvasPixelRatio(this.width, this.height, window.devicePixelRatio, this.quality.lowDetail);
+    const width = Math.round(this.width * this.pixelRatio), height = Math.round(this.height * this.pixelRatio);
+    if (this.canvas.width !== width || this.canvas.height !== height) {
+      this.canvas.width = width;
+      this.canvas.height = height;
+    }
     this.draw();
+  }
+
+  recordFrameCost(milliseconds: number): void {
+    if (!this.quality.record(milliseconds)) return;
+    this.reset();
+    this.resize();
   }
 
   reset(): void {
     this.trail = []; this.waterStamp = -1; this.lastBlend = -1;
     const { water, stage } = this.game;
+    water.setSurfaceResolution(this.quality.lowDetail ? 12 : 8);
+    this.game.renderInterval = 1000 / (this.quality.lowDetail ? 30 : 60);
+    this.lastWaterPaint = -Infinity;
     this.waterCanvas.width = stage.width; this.waterCanvas.height = stage.height;
     this.materialCanvas.width = water.fieldCols; this.materialCanvas.height = water.fieldRows;
     this.materialImage = this.materialContext.createImageData(water.fieldCols, water.fieldRows);
     this.rebuildOpenArea();
+    this.backgroundCanvas.width = this.sceneryCanvas.width = stage.width;
+    this.backgroundCanvas.height = this.sceneryCanvas.height = stage.height;
+    const background = this.backgroundCanvas.getContext('2d')!;
+    const gradient = background.createLinearGradient(0, 0, stage.width, stage.height);
+    gradient.addColorStop(0, '#102a3d'); gradient.addColorStop(1, '#153e52');
+    background.fillStyle = gradient; background.fillRect(0, 0, stage.width, stage.height);
+    this.drawExit(background);
+    const scenery = this.sceneryCanvas.getContext('2d')!;
+    this.drawWalls(scenery);
+    this.drawFixtures(scenery);
   }
 
   private rebuildOpenArea(): void {
@@ -80,23 +107,22 @@ export class Renderer {
     const scale = Math.min(this.width / stage.width, this.height / stage.height);
     ctx.translate((this.width - stage.width * scale) / 2, (this.height - stage.height * scale) / 2);
     ctx.scale(scale, scale);
-    const bg = ctx.createLinearGradient(0, 0, stage.width, stage.height);
-    bg.addColorStop(0, '#102a3d');
-    bg.addColorStop(1, '#153e52');
-    ctx.fillStyle = bg;
-    ctx.fillRect(0, 0, stage.width, stage.height);
-
-    this.drawExit();
-    if (this.geometryStamp !== game.water.geometryRevision) this.rebuildOpenArea();
+    ctx.drawImage(this.backgroundCanvas, 0, 0);
+    const geometryChanged = this.geometryStamp !== game.water.geometryRevision;
+    if (geometryChanged) this.rebuildOpenArea();
     const stamp = game.water.revision;
     const blend = game.renderBlend;
-    if (this.waterStamp !== stamp || Math.abs(this.lastBlend - blend) > .001) {
+    const now = performance.now();
+    const waterInterval = 1000 / (this.quality.lowDetail ? 20 : 30);
+    if (geometryChanged || (this.waterStamp !== stamp || Math.abs(this.lastBlend - blend) > .001) &&
+      (game.status !== 'playing' || now - this.lastWaterPaint >= waterInterval - 1)) {
       this.paintWater(blend);
       this.waterStamp = stamp;
       this.lastBlend = blend;
+      this.lastWaterPaint = now;
     }
     ctx.drawImage(this.waterCanvas, 0, 0);
-    this.drawWalls();
+    ctx.drawImage(this.sceneryCanvas, 0, 0);
     this.drawMechanics();
     this.drawWaypoints();
     this.drawSubmarine();
@@ -139,8 +165,7 @@ export class Renderer {
     ctx.restore();
   }
 
-  private drawWalls(): void {
-    const ctx = this.ctx;
+  private drawWalls(ctx: CanvasRenderingContext2D): void {
     for (const wall of this.game.stage.walls) {
       ctx.fillStyle = '#355165';
       ctx.fillRect(wall.x, wall.y, wall.width, wall.height);
@@ -166,8 +191,8 @@ export class Renderer {
     }
   }
 
-  private drawMechanics(): void {
-    const { ctx, game } = this;
+  private drawFixtures(ctx: CanvasRenderingContext2D): void {
+    const { game } = this;
     ctx.textAlign = 'center';
     for (const pad of game.stage.repairs ?? []) {
       ctx.fillStyle = 'rgba(99,223,165,.12)';
@@ -185,6 +210,11 @@ export class Renderer {
         ctx.closePath(); ctx.fill(); ctx.stroke();
       }
     }
+  }
+
+  private drawMechanics(): void {
+    const { ctx, game } = this;
+    ctx.textAlign = 'center';
     for (const door of game.stage.doors ?? []) {
       const open = game.openedDoors.has(door.id);
       const progress = open ? Math.min(1, (game.elapsed - (game.doorOpenedAt.get(door.id) ?? 0)) / .45) : 0;
@@ -223,8 +253,7 @@ export class Renderer {
     }
   }
 
-  private drawExit(): void {
-    const ctx = this.ctx;
+  private drawExit(ctx: CanvasRenderingContext2D): void {
     const exit = this.game.stage.exit;
     ctx.fillStyle = 'rgba(74,217,174,.12)';
     ctx.beginPath(); ctx.roundRect(exit.x, exit.y, exit.width, exit.height, 14); ctx.fill();
@@ -281,7 +310,7 @@ export class Renderer {
     ctx.save();
     ctx.translate(pos.x, pos.y);
     ctx.shadowColor = 'rgba(255,212,101,.35)';
-    ctx.shadowBlur = 22;
+    ctx.shadowBlur = this.quality.lowDetail ? 0 : 12;
     ctx.fillStyle = '#ffd06d';
     ctx.beginPath(); ctx.roundRect(-26, -16, 52, 32, 14); ctx.fill();
     ctx.shadowBlur = 0;

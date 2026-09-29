@@ -19,11 +19,11 @@ export class Water {
   readonly openCells: number;
   readonly mass: Float64Array;
   readonly previousMass: Float64Array;
-  readonly fieldSize = 6;
-  readonly fieldCols: number;
-  readonly fieldRows: number;
-  readonly field: Float32Array;
-  readonly materialField: Float32Array;
+  fieldSize = 6;
+  fieldCols = 0;
+  fieldRows = 0;
+  field = new Float32Array(0);
+  materialField = new Float32Array(0);
   x = new Float64Array(0);
   y = new Float64Array(0);
   previousX = new Float64Array(0);
@@ -56,6 +56,9 @@ export class Water {
   private restDensity = 0;
   private fieldBlend = -1;
   private fieldRevision = -1;
+  private readonly wallCols: number;
+  private readonly wallRows: number;
+  private nearbyWalls: Rect[][] = [];
 
   constructor(readonly stage: Stage) {
     this.size = stage.cellSize;
@@ -63,15 +66,14 @@ export class Water {
     this.rows = stage.height / this.size;
     if (!Number.isInteger(this.cols) || !Number.isInteger(this.rows)) throw new Error('미로 크기는 cellSize의 배수여야 합니다.');
     this.solid = new Uint8Array(this.cols * this.rows);
+    this.wallCols = Math.ceil(stage.width / SUPPORT);
+    this.wallRows = Math.ceil(stage.height / SUPPORT);
     this.activeWalls = [...stage.walls, ...(stage.doors ?? [])];
     this.rasterizeWalls();
     this.openCells = this.solid.reduce((n, s) => n + (s ? 0 : 1), 0);
     this.mass = new Float64Array(this.solid.length);
     this.previousMass = new Float64Array(this.solid.length);
-    this.fieldCols = Math.ceil(stage.width / this.fieldSize) + 1;
-    this.fieldRows = Math.ceil(stage.height / this.fieldSize) + 1;
-    this.field = new Float32Array(this.fieldCols * this.fieldRows);
-    this.materialField = new Float32Array(this.field.length);
+    this.setSurfaceResolution(this.fieldSize);
     this.hashCols = Math.ceil(stage.width / SUPPORT) + 2;
     this.hashRows = Math.ceil(stage.height / SUPPORT) + 2;
     this.heads = new Int32Array(this.hashCols * this.hashRows);
@@ -93,7 +95,36 @@ export class Water {
         for (let col = wall.x / this.size; col < (wall.x + wall.width) / this.size; col++) this.solid[row * this.cols + col] = 1;
       }
     }
+    // A surface/sample query reaches at most SUPPORT pixels from its origin.
+    // Index fixed walls once, rather than scanning the entire maze per query.
+    this.nearbyWalls = Array.from({ length: this.wallCols * this.wallRows }, () => []);
+    for (const wall of this.activeWalls) {
+      const left = Math.max(0, Math.floor((wall.x - SUPPORT) / SUPPORT));
+      const right = Math.min(this.wallCols - 1, Math.floor((wall.x + wall.width + SUPPORT) / SUPPORT));
+      const top = Math.max(0, Math.floor((wall.y - SUPPORT) / SUPPORT));
+      const bottom = Math.min(this.wallRows - 1, Math.floor((wall.y + wall.height + SUPPORT) / SUPPORT));
+      for (let row = top; row <= bottom; row++) for (let col = left; col <= right; col++) this.nearbyWalls[row * this.wallCols + col].push(wall);
+    }
     this.geometryRevision++;
+  }
+
+  /** Drawing resolution is independent of particles, collisions and buoyancy. */
+  setSurfaceResolution(size: number): void {
+    if (!Number.isFinite(size) || size < 4 || size > 16) throw new Error('Invalid surface resolution');
+    if (size === this.fieldSize && this.field.length) return;
+    this.fieldSize = size;
+    this.fieldCols = Math.ceil(this.stage.width / size) + 1;
+    this.fieldRows = Math.ceil(this.stage.height / size) + 1;
+    this.field = new Float32Array(this.fieldCols * this.fieldRows);
+    this.materialField = new Float32Array(this.field.length);
+    this.fieldRevision = -1;
+    this.fieldBlend = -1;
+  }
+
+  private wallsNear(x: number, y: number): Rect[] {
+    const col = clamp(Math.floor(x / SUPPORT), 0, this.wallCols - 1);
+    const row = clamp(Math.floor(y / SUPPORT), 0, this.wallRows - 1);
+    return this.nearbyWalls[row * this.wallCols + col];
   }
 
   /** Doors latch open. Rebuild only boundaries, preserving every liquid particle. */
@@ -207,7 +238,9 @@ export class Water {
 
   private constrainWalls(i: number, oldX: number, oldY: number): void {
     let x = this.x[i], y = this.y[i];
-    for (const w of this.activeWalls) {
+    // A step moves at most 5 px and each solver correction at most 2 px.
+    // The SUPPORT-wide wall index covers both without changing wall order.
+    for (const w of this.wallsNear(oldX, oldY)) {
       const left = w.x - RADIUS, right = w.x + w.width + RADIUS, top = w.y - RADIUS, bottom = w.y + w.height + RADIUS;
       if (x <= left || x >= right || y <= top || y >= bottom) continue;
       if (oldX <= left) x = left;
@@ -215,9 +248,9 @@ export class Water {
       else if (oldY <= top) y = top;
       else if (oldY >= bottom) y = bottom;
       else {
-        const distances = [x - left, right - x, y - top, bottom - y];
-        const face = distances.indexOf(Math.min(...distances));
-        if (face === 0) x = left; else if (face === 1) x = right; else if (face === 2) y = top; else y = bottom;
+        const dl = x - left, dr = right - x, dt = y - top, db = bottom - y;
+        const closest = Math.min(dl, dr, dt, db);
+        if (closest === dl) x = left; else if (closest === dr) x = right; else if (closest === dt) y = top; else y = bottom;
       }
     }
     this.x[i] = clamp(x, RADIUS, this.stage.width - RADIUS);
@@ -307,14 +340,14 @@ export class Water {
         if (c >= 0 && c < this.cols && r >= 0 && r < this.rows && !this.solid[id] && sum > 0) this.mass[id] += (n % 2 ? fx : 1 - fx) * (n >= 2 ? fy : 1 - fy) / sum * this.unitVolume / this.size ** 2;
       }
       this.nearWall[i] = 0;
-      for (const w of this.activeWalls) {
+      for (const w of this.wallsNear(this.x[i], this.y[i])) {
         if (this.x[i] > w.x - SUPPORT && this.x[i] < w.x + w.width + SUPPORT && this.y[i] > w.y - SUPPORT && this.y[i] < w.y + w.height + SUPPORT) { this.nearWall[i] = 1; break; }
       }
     }
   }
 
   private occluded(ax: number, ay: number, bx: number, by: number): boolean {
-    for (const w of this.activeWalls) {
+    for (const w of this.wallsNear(ax, ay)) {
       if (Math.max(ax, bx) <= w.x || Math.min(ax, bx) >= w.x + w.width || Math.max(ay, by) <= w.y || Math.min(ay, by) >= w.y + w.height) continue;
       const dx = bx - ax, dy = by - ay;
       const tx1 = Math.abs(dx) < 1e-8 ? -Infinity : (w.x - ax) / dx;
@@ -352,6 +385,7 @@ export class Water {
     if (this.fieldRevision === this.revision && Math.abs(this.fieldBlend - blend) < .001) return;
     this.field.fill(0); this.materialField.fill(0);
     const s = this.fieldSize;
+    const hasMaterials = !!this.stage.densityZones?.length;
     for (let i = 0; i < this.count; i++) {
       const px = this.previousX[i] + (this.x[i] - this.previousX[i]) * blend;
       const py = this.previousY[i] + (this.y[i] - this.previousY[i]) * blend;
@@ -361,9 +395,11 @@ export class Water {
         const x = col * s, y = row * s, q = 1 - ((px - x) ** 2 + (py - y) ** 2) / H2;
         if (q <= 0 || this.nearWall[i] && !this.isSolidAt(x, y) && this.occluded(px, py, x, y)) continue;
         const index = row * this.fieldCols + col, weight = q * q * q / this.restDensity;
-        this.field[index] += weight; this.materialField[index] += weight * this.material[i];
+        this.field[index] += weight;
+        if (hasMaterials) this.materialField[index] += weight * this.material[i];
       }
     }
+    if (!hasMaterials) this.materialField.set(this.field);
     this.fieldRevision = this.revision; this.fieldBlend = blend;
   }
 }
