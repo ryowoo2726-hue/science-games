@@ -6,7 +6,7 @@
     "dev": "node scripts/start-local.mjs",
     "build": "node scripts/build.mjs",
     "preview": "node scripts/preview.mjs",
-    "test": "npm --prefix games/buoyancy test"
+    "test": "npm --prefix games/buoyancy test && npm --prefix games/friction test"
   },
   "engines": { "node": ">=22.12.0" }
 }

@@ -1,0 +1,14 @@
+{
+  "name": "friction-lab",
+  "version": "0.1.0",
+  "private": true,
+  "description": "중학생용 마찰 연구소 실험 프로토타입",
+  "scripts": {
+    "start": "node scripts/serve.mjs",
+    "test": "node --test tests/*.test.mjs"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module"
+}

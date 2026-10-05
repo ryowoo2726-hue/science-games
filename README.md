@@ -9,8 +9,9 @@
 | 중력 골프 | `games/gravity` | `games/gravity/` |
 | 탄성력 조준 게임 | `games/elasticity` | `games/elasticity/` |
 | 부력 미로 탐험 | `games/buoyancy` | `games/buoyancy/` |
+| 마찰 연구소 탈출 | `games/friction` | `games/friction/` |
 
-메인 디자인은 기존 `index.html`을 사용합니다. 모든 게임의 상단에 메인으로 돌아가는 링크가 있습니다. 준비 중인 마찰력·자기력 카드는 기존 디자인대로 유지합니다.
+메인 디자인은 기존 `index.html`을 사용합니다. 게임 화면이나 게임 메뉴에 메인으로 돌아가는 링크가 있습니다. 마찰 연구소는 태블릿 기울기와 표면 편집을 사용하는 10단계 게임입니다. 자기력 카드는 준비 중으로 유지합니다.
 
 ## 로컬 실행
 
@@ -33,7 +34,7 @@ npm run preview
 
 - 메인 페이지의 디자인·소개·게임 카드는 `index.html`에서 수정합니다.
 - 게임은 위 표의 해당 폴더에서 수정합니다.
-- `main`에 푸시하면 GitHub Actions가 부력 테스트와 전체 빌드·내부 링크 검사를 수행한 뒤 GitHub Pages에 배포합니다.
+- `main`에 푸시하면 GitHub Actions가 부력·마찰 테스트와 전체 빌드·내부 링크 검사를 수행한 뒤 GitHub Pages에 배포합니다.
 - 새 게임은 `games/`에 소스를 추가하고 `scripts/build.mjs`의 복사 목록과 메인 페이지의 카드를 추가합니다.
 
 ## 이전 프로젝트 보존

@@ -12,6 +12,7 @@ await cp(join(project, 'index.html'), join(output, 'index.html'));
 for (const [game, entries] of [
   ['gravity', ['index.html', 'style.css', 'js']],
   ['elasticity', ['index.html', 'style.css', 'game.js']],
+  ['friction', ['index.html', 'style.css', 'src', 'vendor']],
 ]) {
   for (const entry of entries) {
     await cp(join(project, 'games', game, entry), join(output, 'games', game, entry), { recursive: true });
