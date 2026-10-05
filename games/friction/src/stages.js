@@ -1,4 +1,4 @@
-const goal = '장치를 작동시킨 뒤 물체 전체를 골에 멈추고 0.8초 유지하기';
+const goal = '장치를 작동시킨 뒤 물체 전체를 골 안에서 1초 유지하기';
 const ice = (x, y, w, h) => ({ rect: [x, y, w, h], mode: 'fixed', mu: .001, name: '고정 얼음', color: 0x568ec2 });
 const rubber = (x, y, w, h, mu = 1.1) => ({ rect: [x, y, w, h], mode: 'fixed', mu, name: '고정 고무', color: 0x9f7961 });
 export const stages = [
@@ -12,7 +12,7 @@ export const stages = [
   { title: '붙잡힌 왼쪽', text: '상자의 왼쪽 바닥은 고정 고무입니다. 오른쪽만 매끄럽게 만들어 상자를 돌리고 좁은 문을 통과하세요.', hint: '고무는 바꿀 수 없어요. 오른쪽 접촉점을 문지른 뒤 짧게 앞뒤로 기울여 회전을 살펴보세요.', rough: .55, spawn: [432, 340], target: [680, 96], radius: 78, box: true, gate: { y: 190, gap: 96 }, zones: [rubber(336, 272, 96, 176, .95)] },
   { title: '세로 주차 전용', text: '더 좁은 문을 지나 세로 방향으로 주차해야 해요. 골 안에 멈췄어도 가로 방향이면 열리지 않습니다.', hint: '골에 그려진 상자 방향과 맞추세요. 골 앞 노란 구간은 사포만 사용할 수 있어요.', rough: .18, spawn: [170, 350], target: [688, 92], radius: 76, box: true, goalAngle: Math.PI / 2, gate: { y: 190, gap: 72 }, obstacles: [[410, 370, 24, 170]], zones: [{ rect: [608, 0, 160, 160], mode: 'sand', name: '사포 전용', color: 0xc39c4b }] },
   { title: '연구소 최종 보안', text: '①과 ②에 차례대로 상자를 정지시키고, 얼음과 좁은 문을 넘어 세로 방향으로 주차하세요.', hint: '스위치 둘을 먼저 작동시키세요. 얼음 위에서는 기울기로 제동하고, 문을 지난 뒤 사포로 회전을 멈추세요.', rough: .025, spawn: [160, 350], target: [688, 90], radius: 72, box: true, goalAngle: Math.PI / 2, gate: { y: 180, gap: 60 }, obstacles: [[400, 370, 24, 180], [560, 292, 76, 24]], checkpoints: [{ x: 210, y: 340, radius: 82, box: true }, { x: 680, y: 350, radius: 78, box: true }], zones: [ice(432, 208, 192, 64), { rect: [624, 0, 128, 160], mode: 'sand', name: '사포 전용', color: 0xc39c4b }] }
-].map((stage, index) => ({ ...stage, goal, note: stage.text, result: stage.box ? '바닥의 제한과 장치를 해결하고 상자의 이동·회전을 멈췄어요.' : '바닥의 제한과 장치를 해결하고 골 안에서 멈췄어요.', number: index + 1 }));
+].map((stage, index) => ({ ...stage, goal, note: stage.text, result: '바닥의 제한과 장치를 해결하고 물체 전체를 골 안에서 1초 유지했어요.', number: index + 1 }));
 
 export function stageLayout(stage, width, height) {
   const sx = width / 832, sy = height / 480;

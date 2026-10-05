@@ -1,24 +1,25 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { STOP, insideGoal, updateGoal } from '../src/physics/Goal.js';
+import { GOAL, insideGoal, updateGoal } from '../src/physics/Goal.js';
 import { stages, stageLayout } from '../src/stages.js';
 const ball = (x = 0, speed = 0) => ({ position: { x, y: 0 }, circleRadius: 20, velocity: { x: speed, y: 0 }, angularVelocity: 0 });
-test('passing through the goal while moving never clears on any stage', () => {
+test('moving inside the goal accumulates time on every stage', () => {
   for (const stage of stages) {
     const body = ball(0, .2);
     body.vertices = [{ x: -54, y: -22 }, { x: 54, y: -22 }, { x: 54, y: 22 }, { x: -54, y: 22 }];
-    assert.equal(updateGoal(body, [0, 0], stage.radius, stage.box, 790, 20), 0);
+    assert.equal(updateGoal(body, [0, 0], stage.radius, stage.box, 980, 20), GOAL.holdMs);
   }
 });
-test('resting entirely inside the goal accumulates the full hold time', () => {
-  let elapsed = 0; for (let i = 0; i < 50; i++) elapsed = updateGoal(ball(), [0, 0], 68, false, elapsed, 16);
-  assert.equal(elapsed, STOP.holdMs);
-  assert.equal(updateGoal(ball(0, .1), [0, 0], 68, false, elapsed, 16), 0);
+test('one continuous second is required and leaving resets the timer', () => {
+  let elapsed = 0; for (let i = 0; i < 60; i++) elapsed = updateGoal(ball(0, .1), [0, 0], 68, false, elapsed, 16);
+  assert.ok(elapsed < GOAL.holdMs);
+  elapsed = updateGoal(ball(0, .1), [0, 0], 68, false, elapsed, 40);
+  assert.equal(elapsed, GOAL.holdMs);
   assert.equal(updateGoal(ball(60), [0, 0], 68, false, elapsed, 16), 0);
 });
-test('a rotating box or partially overlapping object cannot clear', () => {
+test('rotation is allowed inside the goal but partial overlap resets time', () => {
   const body = { ...ball(), vertices: [{ x: -54, y: -22 }, { x: 54, y: -22 }, { x: 54, y: 22 }, { x: -54, y: 22 }], angularVelocity: .001 };
-  assert.equal(updateGoal(body, [0, 0], 92, true, 790, 20), 0);
+  assert.equal(updateGoal(body, [0, 0], 92, true, 980, 20), GOAL.holdMs);
   body.angularVelocity = 0;
   assert.equal(updateGoal(body, [0, 0], 92, true, 790, 20), 810);
   body.vertices[0].x = -100;

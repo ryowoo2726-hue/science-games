@@ -1,4 +1,4 @@
-import { updateGoal } from '../physics/Goal.js';
+import { updateStoppedPad } from '../physics/Goal.js';
 
 export function makeRuleState() { return { checkpoint: 0, hold: 0, failed: false }; }
 export function updateRules(body, checkpoints, state, delta) {
@@ -11,7 +11,7 @@ export function updateRules(body, checkpoints, state, delta) {
     if (near && speed >= pad.min && speed <= pad.max) state.checkpoint++;
     else if (near && speed > pad.max) state.failed = true;
   } else {
-    state.hold = updateGoal(body, [pad.x, pad.y], pad.radius, Boolean(pad.box), state.hold, delta);
+    state.hold = updateStoppedPad(body, [pad.x, pad.y], pad.radius, Boolean(pad.box), state.hold, delta);
     if (state.hold >= 500) { state.checkpoint++; state.hold = 0; }
   }
 }

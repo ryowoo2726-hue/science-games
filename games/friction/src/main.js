@@ -1,7 +1,7 @@
 import { FrictionField, applySurfaceForces } from './physics/SurfacePhysics.js';
 import { TiltController } from './input/TiltController.js';
 import { stages, stageLayout } from './stages.js';
-import { STOP, updateGoal } from './physics/Goal.js';
+import { GOAL, updateGoal } from './physics/Goal.js';
 import { makeRuleState, updateRules, goalReady } from './systems/StageRules.js';
 import { SurfaceRenderer } from './render/SurfaceRenderer.js';
 const $ = id => document.getElementById(id);
@@ -94,7 +94,7 @@ class Lab extends Phaser.Scene {
     const ready = goalReady(stage, this.rules, b), goalColor = this.rules.failed ? 0xd77665 : ready ? 0x64b993 : 0x9a9190;
     g.fillStyle(ready ? 0x245346 : 0x403b43, .65); g.fillCircle(tx, ty, radius); g.lineStyle(2, goalColor, .85); g.strokeCircle(tx, ty, radius); g.lineStyle(1, goalColor, .35); g.strokeCircle(tx, ty, radius - 6);
     if (stage.goalAngle != null) { const points = [[-54,-22],[54,-22],[54,22],[-54,22]].map(([px,py]) => ({ x: tx + px * Math.cos(stage.goalAngle) - py * Math.sin(stage.goalAngle), y: ty + px * Math.sin(stage.goalAngle) + py * Math.cos(stage.goalAngle) })); g.lineStyle(2, 0xd9c58e, .65); g.strokePoints(points, true); }
-    if (this.dwell > 0) { g.lineStyle(4, 0xb3f5c3); g.beginPath(); g.arc(tx, ty, radius + 4, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * Math.min(1, this.dwell / STOP.holdMs)); g.strokePath(); }
+    if (this.dwell > 0) { g.lineStyle(4, 0xb3f5c3); g.beginPath(); g.arc(tx, ty, radius + 4, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * Math.min(1, this.dwell / GOAL.holdMs)); g.strokePath(); }
     g.fillStyle(0x89d0a2); g.fillRoundedRect(tx - 8, ty - 8, 16, 16, 4);
     for (const wall of this.walls) { g.fillStyle(0x677779); g.fillRect(wall.bounds.min.x, wall.bounds.min.y, wall.bounds.max.x - wall.bounds.min.x, wall.bounds.max.y - wall.bounds.min.y); g.lineStyle(2, 0xa1b2a9); g.lineBetween(wall.bounds.min.x, wall.bounds.min.y, wall.bounds.max.x, wall.bounds.min.y); }
     this.checkpoints.forEach((pad, index) => { const done = index < this.rules.checkpoint, active = index === this.rules.checkpoint; g.fillStyle(done ? 0x327e63 : 0x3b4058, .8); g.fillCircle(pad.x, pad.y, pad.radius); g.lineStyle(2, done ? 0x9debb6 : active ? 0xead27c : 0x747b91); g.strokeCircle(pad.x, pad.y, pad.radius); this.dynamicText(`pad-${index}`, pad.x, pad.y, pad.kind === 'speed' ? (done ? '✓' : `속도 ${pad.min}–${pad.max}`) : done ? '✓' : `${index + 1}`, { fontSize: pad.kind === 'speed' ? '12px' : '20px', fontFamily: 'sans-serif', color: '#f1e6af' }, true); if (active && this.rules.hold) { g.lineStyle(3, 0xf1dd80); g.beginPath(); g.arc(pad.x, pad.y, pad.radius + 4, -Math.PI / 2, -Math.PI / 2 + 2 * Math.PI * Math.min(1, this.rules.hold / 500)); g.strokePath(); } });
@@ -120,10 +120,10 @@ class Lab extends Phaser.Scene {
     if (!complete && !$('help-dialog').open && !document.hidden) {
       const previousCheckpoint = this.rules.checkpoint;
       updateRules(b, this.checkpoints, this.rules, delta);
-      if (this.rules.checkpoint > previousCheckpoint) notify(this.rules.checkpoint === this.checkpoints.length ? '장치 작동 완료! 골에서 정지하세요.' : '첫 번째 스위치 완료! 다음 스위치로 이동하세요.');
+      if (this.rules.checkpoint > previousCheckpoint) notify(this.rules.checkpoint === this.checkpoints.length ? '장치 작동 완료! 골 안에서 1초 유지하세요.' : '첫 번째 스위치 완료! 다음 스위치로 이동하세요.');
       if (this.rules.failed && !this.failNotified) { this.failNotified = true; notify('너무 빠르게 통과했어요. ↺로 다시 시도하세요.'); }
       this.dwell = goalReady(stage, this.rules, b) ? updateGoal(b, this.target, stage.radius, stage.box, this.dwell, delta) : 0;
-      if (this.dwell >= STOP.holdMs) this.finish();
+      if (this.dwell >= GOAL.holdMs) this.finish();
       if (!this.outside && (x < -60 || x > this.worldWidth + 60 || y < -60 || y > this.worldHeight + 60)) { this.outside = true; notify('물체가 화면 밖으로 나갔어요. ↺를 누르면 다시 돌아옵니다.'); }
     }
   }

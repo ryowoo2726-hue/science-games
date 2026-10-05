@@ -16,7 +16,7 @@
 <div id="result" class="result" hidden><h2 id="result-title">철컥! 문이 열렸어요.</h2><p id="result-text"></p><button id="next" class="primary">다음 단계로 →</button><button id="again">다시 실험하기</button></div>
 <dialog id="help-dialog"><button id="close-help" class="close" aria-label="닫기">×</button><h2>실험 <span id="lab-number">01</span> · <span id="mission-title"></span></h2>
 <nav id="stage-menu" class="tabs" aria-label="10단계 선택"></nav>
-<p id="mission-text"></p><p id="goal-text"></p><p>물체 전체가 초록색 골 안에 들어가고 이동과 회전이 멈춘 상태로 0.8초 유지되어야 클리어됩니다. 골을 지나가는 것만으로는 클리어되지 않아요.</p><p>손이나 사포를 선택해 바닥을 여러 번 문지르세요. 청록색일수록 매끄럽고 점이 많을수록 거칠어요. 태블릿을 기울이거나 화면 화살표를 눌러 물체를 움직이세요.</p><p>물체는 화면 밖으로 나갈 수 있어요. ↺를 누르면 바닥을 유지한 채 물체만 돌아옵니다.</p>
+<p id="mission-text"></p><p id="goal-text"></p><p>물체 전체가 초록색 골 안에서 연속 1초 유지되면 클리어됩니다. 안에서 움직이거나 회전해도 괜찮아요. 일부라도 골 밖으로 나가면 유지 시간이 다시 시작됩니다.</p><p>손이나 사포를 선택해 바닥을 여러 번 문지르세요. 청록색일수록 매끄럽고 점이 많을수록 거칠어요. 태블릿을 기울이거나 화면 화살표를 눌러 물체를 움직이세요.</p><p>물체는 화면 밖으로 나갈 수 있어요. ↺를 누르면 바닥을 유지한 채 물체만 돌아옵니다.</p>
 <p>빗금이 있는 파란 바닥은 고정 얼음, 갈색 바닥은 고정 고무입니다. 두 구간은 문질러도 바뀌지 않아요. 노란 바닥은 사포만 사용할 수 있습니다. 번호 스위치는 순서대로 0.5초 정지하고, 속도 센서는 적정 속도로 통과하세요. 회색 골은 아직 잠겨 있어요.</p>
 <p id="tilt-status">센서를 연결하고 편한 자세에서 수평을 맞추세요.</p><button id="calibrate" hidden>현재 자세를 수평으로</button><div class="settings-actions"><button id="forces">힘 보기 · 3초</button><button id="hint">작은 힌트</button><button id="reset-all">바닥까지 초기화</button></div><p id="hint-text"></p><button id="start" class="primary">게임으로 돌아가기</button><p><a href="../../" style="color:#b9d7cc">← 과학 게임 홈페이지</a></p></dialog>
 <script src="vendor/phaser.min.js"></script><script type="module" src="src/main.js"></script>

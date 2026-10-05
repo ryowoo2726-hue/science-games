@@ -1,5 +1,5 @@
-// Only sub-pixel numerical motion is tolerated; drifting and rotation reset the timer.
-export const STOP = { speed: .001, angularSpeed: .00001, holdMs: 800 };
+export const GOAL = { holdMs: 1000 };
+const STOP = { speed: .001, angularSpeed: .00001 };
 
 export function insideGoal(body, target, radius, box) {
   const [x, y] = target;
@@ -9,6 +9,11 @@ export function insideGoal(body, target, radius, box) {
 }
 
 export function updateGoal(body, target, radius, box, elapsed, delta) {
+  return insideGoal(body, target, radius, box) ? elapsed + delta : 0;
+}
+
+// Numbered switches still require stopping; the final goal only requires staying inside.
+export function updateStoppedPad(body, target, radius, box, elapsed, delta) {
   const stopped = Math.hypot(body.velocity.x, body.velocity.y) <= STOP.speed && Math.abs(body.angularVelocity) <= STOP.angularSpeed;
   return insideGoal(body, target, radius, box) && stopped ? elapsed + delta : 0;
 }
